@@ -9,10 +9,10 @@ This was supposed to be done by a *mandatory distribution key using objective an
 
 The details and consequences of this proposal are in itself very interesting but are not important here.
 
-We wanted to take this idea of a distribution key one step further and 
+We wanted to take this idea of a distribution key one step further. 
 
 ## How 
-what needs to be done is...
+todo
 #### The Sliders
 
 * The first four sliders can be used to adjust the weightings of the distribution key. The original setting (0.4/0.4/0.1/0.1) is the one proposed by the EU. The values and limits of the sliders are reactive to each other and can sometimes make problems!
@@ -40,7 +40,7 @@ Summed up, we wanted to put the omnipresent discussion of certain European count
 Naturally, this premise depends greatly on the quality of the data. That is why we were very dilligent in choosing the data sets (see the section below).
 
 ## Data sources
-All of the data was accessed between the 11th and 14th of June, 2016. We haven't made an effort to incorporate the most recent data but this will happen in the future.
+All of the data was accessed between the 11th and 14th of June, 2016 and again on the 10th of October, 2016. We haven't made an effort to incorporate the most recent data but this will happen in the future.
 
 #### Eurostat
 The biggest part of data came from [Eurostat](http://ec.europa.eu/eurostat). We used the following data sets:
@@ -96,4 +96,4 @@ We couldn't have done this without
 
 If you have suggestions how the app could be improved, feel free to write us at: 
 
-gnutz-at-posteo.de
+statistikwerkstatt-at-posteo.de

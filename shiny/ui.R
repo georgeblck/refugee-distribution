@@ -15,7 +15,7 @@ library(markdown)
 shinyUI(pageWithSidebar(
 
   # Title of it
-  headerPanel(h2("What if Refugess were distributed fair across Europe?"), windowTitle = "Distributing Refugees in Europe"),
+  headerPanel(h2("What if Refugess were distributed justly across Europe?"), windowTitle = "Distributing Refugees in Europe"),
   
   sidebarPanel(width = 3,
     useShinyjs(),
