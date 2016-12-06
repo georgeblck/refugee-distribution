@@ -32,7 +32,7 @@ todo
 
 There are two main reasons for this visualization. We want to
 
-1. provide an easily accesisble overview of the distribution of (accepted) Asylum Applications in the EU
+1. provide an easily accessible overview of the distribution of (accepted) Asylum Applications in the EU
 2. provide a sensible and changeable benchmark of how many/whare share of refugees each country should accept 
 
 Summed up, we wanted to put the omnipresent discussion of certain European countries taking too few/many refugees on a more factual basis.
@@ -89,7 +89,7 @@ We couldn't have done this without
 * [Git](https://git-scm.com/)
 * [The EU and eurostat](http://ec.europa.eu/eurostat)
 * [The UNHCR](http://www.unhcr.de/)
-* [Amazon AWS](https://aws.amazon.com/de/)
+* [manitu](https://manitu.de/)
 * [Philip Grech](http://www.necom.ethz.ch/people/person-detail.html?persid=115265)
 
 ## Contact

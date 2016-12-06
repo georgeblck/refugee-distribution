@@ -9,6 +9,10 @@ source("code/readandmatchData.R")
 input.list <- list(total = total, asyl = asyl.ls, accept = accept)
 setwd(shiny.wd)
 
+dat <- data.frame(
+  time = factor(c("Lunch","Dinner"), levels=c("Lunch","Dinner")),
+  total_bill = c(14.89, 17.23)
+)
 
 shinyServer(function(input, output, session) {
   observe({
@@ -59,7 +63,7 @@ shinyServer(function(input, output, session) {
         str2 <- paste("<b>", format(ref.numbers[2], big.mark = ",", scientific = FALSE), "(", round(ref.numbers[2]/ref.numbers[1], 4)*100,
                       "%)</b> of these applications were accepted.")
         str3 <- paste("The below representation shows a theoretical scenario what would happen if <b>all</b> these Asylum Applications would have been accepted and then distributed across Europe by a fair quota.
-                      This scenario is compared to the <b>actual</b> distribution of (Accepted) Asylum Applications.")
+                      This scenario is compared to the <b>actual</b> distribution of (Accepted) Asylum Applications.<br> For more information have a look at the almost finished Explanation!")
         return(HTML(paste(str1, str2, str3, sep = '<br/>')))#"<br/>",
     })
     
@@ -71,9 +75,8 @@ shinyServer(function(input, output, session) {
                          max(c(0,input$w.asyl), na.rm = TRUE),  max(c(0,input$w.unemp), na.rm = TRUE))    
       leg <- g_legend(ref.plot$q1)
       grid.arrange(arrangeGrob(ref.plot$q1 + theme(legend.position="none"),
-                               ref.plot$q2 + theme(legend.position="none"),
-                               leg, ncol = 3, widths = c(3/7, 3/7, 1/7))) 
-  
+                              ref.plot$q2 + theme(legend.position="none"),
+                             leg, ncol = 3, widths = c(3/7, 3/7, 1/7)))
     }, height = function() {
       session$clientData$output_plot_width*(3/5)
     }, width = function() {

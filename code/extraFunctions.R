@@ -164,7 +164,6 @@ get.ref.plot <- function(input.list, year.range = c(2014, 2015), which.source = 
   # Melt and Split the data set
   melt.quota  <- melt(res.quota, id.vars= c("country", "good"))
   melt.quota  <- split(melt.quota, melt.quota$good)
-  
   # Plot it
   xlab.low    <- expression(Proportion~of~Asylum~Applications~bold(paste("lower than proposed")))
   xlab.high   <- expression(Proportion~of~Asylum~Applications~bold(paste("higher than proposed")))
@@ -172,7 +171,7 @@ get.ref.plot <- function(input.list, year.range = c(2014, 2015), which.source = 
     geom_bar(stat="identity", position="dodge", colour="black") + 
     coord_flip() + 
     scale_fill_manual(legend_title, labels = leg.labels, values = leg.cols, guide = guide_legend(reverse = TRUE)) + 
-    scale_x_discrete(limits = rev(melt.quota[[1]]$country))+
+    scale_x_discrete(limits = rev(unique(melt.quota[[1]]$country))) +
     labs(y = gg.ylab, x = xlab.low) +
     scale_y_continuous(labels = comma)
   q2 <- ggplot(melt.quota[[2]], aes(x = country, y = value, fill = variable)) + 
@@ -180,7 +179,7 @@ get.ref.plot <- function(input.list, year.range = c(2014, 2015), which.source = 
     coord_flip() +
     scale_fill_manual(legend_title, labels = leg.labels, values = leg.cols) + 
     labs(y = gg.ylab, x = xlab.high) + 
-    scale_x_discrete(limits = rev(melt.quota[[2]]$country)) +
+    scale_x_discrete(limits = rev(unique(melt.quota[[2]]$country))) +
     scale_y_continuous(labels = comma)
   return(list(q1 = q1, q2 = q2))
 }
