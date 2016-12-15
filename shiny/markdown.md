@@ -1,4 +1,6 @@
 ## What
+Link zu neuem artikel
+Link zu deutscher version
 
 In September 2015 the European Commission proposed a plan to relocate 120'000 refugees from Greece, Italy & Hungary to all European countries. 
 This was supposed to be done by a *mandatory distribution key using objective and quantifiable criteria*, consisting of the following variables and weightings:

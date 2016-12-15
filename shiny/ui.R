@@ -7,93 +7,134 @@ library(gridExtra)
 library(scales)
 library(shinyjs)
 library(markdown)
-# For AWS
-#sudo su - -c "R -e \"install.packages(c('reshape','ggplot2', 'gridExtra', 'scales', 'markdown','Cairo'), repos='http://cran.rstudio.com/')\""
 
+# For AWS
+#sudo su - -c "R -e \"install.packages(c('reshape','ggplot2', 'gridExtra', 
+#'scales', 'markdown','Cairo'), repos='http://cran.rstudio.com/')\""
+
+#runApp("shiny", host="0.0.0.0", port=7543, launch.browser = FALSE)
 
 
 shinyUI(pageWithSidebar(
 
-  # Title of it
-  headerPanel(h2("What if all Refugees were distributed justly across Europe?"), windowTitle = "Distributing Refugees in Europe"),
+  # Title of the App
+  headerPanel(h2("What if all Refugees were distributed justly across Europe?"), 
+              windowTitle = "Distributing Refugees in Europe"),
   
+  ######################
+  ## Side-Bar
+  ######################
   sidebarPanel(width = 3,
     useShinyjs(),
-    #tags$head(
-     # tags$style(type="text/css", "select { max-width: 300px; }"),
-    #  tags$style(type="text/css", ".span4 { max-width: 300px; }"),
-    #  tags$style(type="text/css", ".well { max-width: 300px; }")#,
-      #tags$style(type = "text/css", ".shiny-input-container:not(.shiny-input-container-inline) {margin-bottom: -5px;}")
-      #tags$style(type = "text/css", ".checkbox { margin-bottom: -10px; }")
-    #),
+    
+    # Hidden Block 1 (in Side-Bar) 
+    # Only show when on one of the two Results tabs
     shinyjs::hidden(
-      div(id = "choice.vars",
-        sliderInput("range", label = strong("Distribute Asylum Applications from the years"), min = 2010, 
-                    max = 2016, value = c(2014, 2015), step = 1, sep = "", ticks = FALSE),
-        div(id = "only.plot.options", style = "padding: 0px;, margin: 0px;",
-            #checkboxGroupInput("show", label = h4("Show ... in plot"),
-            #                   choices = list("absolute values instead of ratios" = 1,
-            #                                  "data on Asylum Applications" = 2))
-            #),
-            checkboxInput("show", span("Show ", strong("absolute"), "values instead of ratios."), value = FALSE)
-        ),
-        div(id = "only.table.options",
-            checkboxInput("per.capita", label = span("Asylum Applicatons", strong("per 1000 inhabitants")), value = FALSE)
-        ),
-        # Countries
+      div(id = "only.results.options",
+          # Choose the time range 
+          sliderInput("year.range", label = strong("Distribute Asylum Applications from the years"), 
+                    min = 2010, max = 2016, value = c(2014, 2015), step = 1, 
+                    sep = "", ticks = FALSE),
+          # Nested Hidden Block 1.1
+          # Only show when on plot output
+          div(id = "only.plot.options", style = "padding: 0px;, margin: 0px;",
+              selectInput("which.style.plot", "Show which Variable in Plot:",
+                          choices = c("Each countries Ratios" = "ratio", "Absolute Values" = "abs",
+                                      "AA per 1000 inhabitants"= "per")),
+              # Show absolute AA numbers in plot
+              checkboxInput("absolute", 
+                            span("Show ", strong("absolute"), "values instead of ratios."), 
+                            value = FALSE)
+          ),
+          # Nested Hidden Block 1.1
+          # Only show when on table output
+          div(id = "only.table.options",
+              # Show per capita AA numbers in table
+              checkboxInput("per.capita", 
+                            label = span("Asylum Applicatons", strong("per 1000 inhabitants")), 
+                            value = FALSE),
+              checkboxGroupInput("which.style.table", label = h4("Show which variables in table"), 
+                                 choices = c("Each countries Ratios" = "ratio", "Absolute Values" = "abs",
+                                             "AA per 1000 inhabitants"= "per"), selected = "ratio"
+              )
+          ),
+        # Add/Remove certain country groups
         checkboxGroupInput("countries", label = h4("Include country groups"), 
                            choices = list("Iceland, Norway, Liechtenstein, Switzerland (Schengen area)" = 1, 
-                                          "Denmark, Ireland, UK (EU states with opt-outs regarding Dublin III Regulation)" = 2)
+                                          "Denmark, Ireland, UK (EU states with opt-outs 
+                                          regarding Dublin III Regulation)" = 2)
         ),
-        a(id = "show.weights", h4("Change weights of key"), href = "#"),
-        shinyjs::hidden(
-          div(id = "weight.vars",
-              sliderInput("w.pop", "Weight of population size", min = 0, max = 1, value = 0.4, step = 0.1),
+        # ON-CLICK: Show/Hide the weight sliders
+        a(id = "show.slider.weights", h4("Hide sliders"), href = "#"),
+          div(id = "slider.weights",
+              # The four sliders to change the weights of the quota
+              # Only the first slider (Population) is defined here
+              sliderInput("w.pop", "Weight of population size", 
+                          min = 0, max = 1, value = 0.4, step = 0.1),
+              # The reactive sliders are definded in server.R
               uiOutput("gdp.slider"), 
               uiOutput("asyl.slider"),
               uiOutput("unemp.slider")
           )
-        )
       )
     ),
+    
+    # Hidden Block 2
+    # Only show when on the "Base-Data" tab
     shinyjs::hidden(
-      # Basically the same as the first year slider but adapted to the 3rd tab
-      div(id = "base.vars",
-          sliderInput("range2", label = h4("Choose the base year of the key"), min = 2009, 
+      # Chooose the base year of the key
+      div(id = "only.base.options",
+          sliderInput("base.year.range", label = h4("Choose the base year of the key"), min = 2009, 
                       max = 2015, value = 2015, step = 1, sep ="", ticks = FALSE)
       )
     ),
+    
+    # Hidden Block 3
+    # Only show when NOT on the "Explanation" Tab
     shinyjs::hidden(
-        div(id = "markdown",
-          # Options hyperlink for toggeling
-          a(id = "more.options", h4("Show/hide advanced options"), href = "#"),
+        div(id = "not.explanation.options",
+          # ON-CLICK: Show/Hide advanced options
+          a(id = "show.more.options", h4("Show/hide advanced options"), href = "#"),
+          # Nested Hidden Block 3.1
+          # Only Show when above link is clicked
           shinyjs::hidden(
-            div(id = "all.options",
-              selectInput("source", label = h4("Source of Refugee Data"), 
-                          choices = list("UNHCR Data" = 1, "Eurostat (only new Asylum Applications)" = 2, "Eurostat (including repeated Asylum Aplications)" = 3), 
-                          selected = 1),
-              shinyjs::hidden(
-                div(id="only.idx", 
-              selectInput("idx", label = h4("Which Distribution Key to use?"), 
-                          choices = list("EU-Key" = 1, "Grech-Key (corrected EU-Key)" = 2), 
-                          selected = 2))
-              )
+            div(id = "advanced.options",
+                # Switch the source of (only!) the refugee data
+                selectInput("source", label = h4("Source of Refugee Data"), 
+                            choices = c("UNHCR Data" = "unhcr", "Eurostat (only new Asylum Applications)" = "first", 
+                                           "Eurostat (including repeated Asylum Aplications)" = "all")), 
+                           # selected = ""),
+                # 2xNested Hidden Block 3.1.1
+                # Only NOT Show when on "Base-Var" tab
+                shinyjs::hidden(
+                  div(id="not.base.options", 
+                  selectInput("idx", label = h4("Which Distribution Key to use?"), 
+                              choices = c("EU-Key" = "eu", "Grech-Key (corrected EU-Key)" = "grech"), 
+                              selected = "grech"))
+                  )
+                )
             )
           )
         )
-      )
-  ),
+    ),
   
+  #####################
+  ## Main Panel
+  #####################
   mainPanel(#h4("Output"),
+    # Hidden Block 4
+    # Only Show when NOT on Explanation/Base-Var tab
     shinyjs::hidden(
       div(id = "show.header",
-      htmlOutput("header.text"))),
-            tabsetPanel(id = "tabs",
-              tabPanel("Results via Bar-Plot", plotOutput("plot", height="auto")),
-              tabPanel("Results via Table", dataTableOutput("table")),
-              tabPanel("Base data for Key", dataTableOutput("index.table")),
-              tabPanel("Explanation", includeMarkdown("markdown.md"))
-            )
+      htmlOutput("header.text"))
+      ),
+    tabsetPanel(id = "tabs",
+                tabPanel("Results via Bar-Plot", plotOutput("plot", height="auto")),
+                tabPanel("Results via Table", dataTableOutput("table")),
+                tabPanel("Base data for Key", dataTableOutput("index.table")),
+                tabPanel("Explanation", includeMarkdown("markdown.md"))
+                )
     )
-))
+  )
+)
 

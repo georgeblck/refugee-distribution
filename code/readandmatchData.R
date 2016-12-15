@@ -7,7 +7,8 @@
 #----------------------------------
 # Read GDP ("Gross domestic product at market prices") 2006-2015 annual values 
 #---------------------------------
-gdp.raw <- read.eurostat("original_data/nama_10_gdp_1_Data.csv", name = "GDP")
+gdp.raw <- read.eurostat("original_data/nama_10_gdp_1_Data.csv", 
+                         name = "GDP")
 gdp.aha <- split(gdp.raw, gdp.raw$UNIT)
 # Choice!!: "Current prices, million euro" or "Current prices, million Purchasing Power Standards"
 gdp <- subset(gdp.raw, UNIT == "Current prices, million euro", 
@@ -26,7 +27,8 @@ liech.gdp <- rbind(liech.gdp, liech.gdp[rep(8,2),])
 liech.gdp[9:10,2] <- c(2014,2015)
 colnames(liech.gdp)[1] <- "GEO"
 # Use exchange rates to transform the CHF GDP
-liech.gdp$GDP <- liech.gdp$GDP/read.eurostat("original_data/ert_bil_eur_a_1_Data.csv", name = "Value")$Value
+liech.gdp$GDP <- liech.gdp$GDP/read.eurostat("original_data/ert_bil_eur_a_1_Data.csv", 
+                                             name = "Value")$Value
 gdp <- rbind(gdp, liech.gdp)
 
 #----------------------------------------
@@ -38,7 +40,8 @@ pop <- pop.raw[which(pop.raw$TIME>=1991), c(1,2,5)]
 #---------------------------------
 # Unemployment 2006-2015 annual
 #-------------------------------
-unemp.raw <- read.eurostat("original_data/une_rt_a_1_Data.csv", name = "UNEMPLOYMENT")
+unemp.raw <- read.eurostat("original_data/une_rt_a_1_Data.csv", 
+                           name = "UNEMPLOYMENT")
 unemp <- unemp.raw[, c(1, 2, 6)]
 # Append the Swiss data
 unemp <- rbind(unemp, read.table("original_data/swiss_unemp.csv", 
@@ -85,7 +88,9 @@ colnames(asyl.eu)[3:4] <- c("First", "All")
 asyl.eu.old.raw <- read.eurostat("original_data/migr_asyctzm_1_Data.csv", name = "First")
 asyl.eu.old.raw$TIME <- as.numeric(substr(asyl.eu.old.raw$TIME, 1,4))
 asyl.eu.old.raw <- aggregate(First~ TIME + GEO, data = asyl.eu.old.raw, FUN=sum, drop = FALSE)
-asyl.eu.old.raw <- merge(asyl.eu.old.raw, read.eurostat("original_data/migr_asyctz_1_Data.csv", name = "All")[,c(1,2,5)], by = c("GEO", "TIME"))
+asyl.eu.old.raw <- merge(asyl.eu.old.raw, 
+                         read.eurostat("original_data/migr_asyctz_1_Data.csv", 
+                                       name = "All")[,c(1,2,5)], by = c("GEO", "TIME"))
 
 #------------------------------------
 # Read data on monthly asyl Seekers (UNHCR) 1999-2016

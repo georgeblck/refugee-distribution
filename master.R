@@ -1,4 +1,4 @@
-# Autorin: ims & njh 
+# Autor: njh 
 # Szenarien für eine europäische Lösung der Flüchtlingsproblematik
 
 # To-DO:

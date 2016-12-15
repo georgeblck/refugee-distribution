@@ -32,8 +32,9 @@ get.ref.numbers <- function(input.list, year.range = c(2014, 2015), which.source
   return(all.numbers)
 }
 
-get.ref.table <- function(input.list, year.range = c(2014, 2015), which.source = "unhcr", per.capita = FALSE,
-                       countries = c("1", "2"), which.idx = "grech", w.pop = 0.4, w.gdp = 0.4, w.asyl = 0.1, w.unemp = 0.1){
+get.ref.table <- function(input.list, year.range = c(2014, 2015), which.source = "unhcr", 
+                          per.capita = FALSE, countries = c("1", "2"), which.idx = "grech", 
+                          w.pop = 0.4, w.gdp = 0.4, w.asyl = 0.1, w.unemp = 0.1){
   # Extract data
   asyl.ls     <- input.list$asyl
   total       <- input.list$total
@@ -60,6 +61,8 @@ get.ref.table <- function(input.list, year.range = c(2014, 2015), which.source =
   all.applic <- sum(num.applic$applic, na.rm = TRUE)
   res.applic <- cbind(num.applic, quota.applic)
   
+  #cat("\n\n\n\n",str(total.year))
+  #cat("\n", which.idx)
   # Calculate the chosen index with all the pre-set values
   res.key <- calc.key(total.year, which = which.idx, weight.pop = w.pop, 
                       weight.gdp = w.gdp, weight.unemp = w.unemp, 
