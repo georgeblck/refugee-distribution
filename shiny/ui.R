@@ -38,13 +38,9 @@ shinyUI(pageWithSidebar(
           # Nested Hidden Block 1.1
           # Only show when on plot output
           div(id = "only.plot.options", style = "padding: 0px;, margin: 0px;",
-              selectInput("which.style.plot", "Show which Variable in Plot:",
-                          choices = c("Each countries Ratios" = "ratio", "Absolute Values" = "abs",
-                                      "AA per 1000 inhabitants"= "per")),
-              # Show absolute AA numbers in plot
-              checkboxInput("absolute", 
-                            span("Show ", strong("absolute"), "values instead of ratios."), 
-                            value = FALSE)
+              selectInput("which.style.plot", "Show which variable in Plot:",
+                          choices = c("Share of Refugees" = "ratio", "Number of Refugees" = "abs",
+                                      "Refugees per 1000 inhabitants"= "per"))
           ),
           # Nested Hidden Block 1.1
           # Only show when on table output
@@ -52,14 +48,10 @@ shinyUI(pageWithSidebar(
               # Show per capita AA numbers in table
               checkboxInput("per.capita", 
                             label = span("Asylum Applicatons", strong("per 1000 inhabitants")), 
-                            value = FALSE),
-              checkboxGroupInput("which.style.table", label = h4("Show which variables in table"), 
-                                 choices = c("Each countries Ratios" = "ratio", "Absolute Values" = "abs",
-                                             "AA per 1000 inhabitants"= "per"), selected = "ratio"
-              )
+                            value = FALSE)
           ),
         # Add/Remove certain country groups
-        checkboxGroupInput("countries", label = h4("Include country groups"), 
+        checkboxGroupInput("countries", label ="Include country groups", 
                            choices = list("Iceland, Norway, Liechtenstein, Switzerland (Schengen area)" = 1, 
                                           "Denmark, Ireland, UK (EU states with opt-outs 
                                           regarding Dublin III Regulation)" = 2)
@@ -84,7 +76,7 @@ shinyUI(pageWithSidebar(
     shinyjs::hidden(
       # Chooose the base year of the key
       div(id = "only.base.options",
-          sliderInput("base.year.range", label = h4("Choose the base year of the key"), min = 2009, 
+          sliderInput("base.year.range", label = h4("Choose the base year of the quota"), min = 2009, 
                       max = 2015, value = 2015, step = 1, sep ="", ticks = FALSE)
       )
     ),
@@ -121,9 +113,9 @@ shinyUI(pageWithSidebar(
   #####################
   ## Main Panel
   #####################
-  mainPanel(#h4("Output"),
+  mainPanel(
     # Hidden Block 4
-    # Only Show when NOT on Explanation/Base-Var tab
+    # Only Show when NOT on Explanation tab
     shinyjs::hidden(
       div(id = "show.header",
       htmlOutput("header.text"))
@@ -131,7 +123,7 @@ shinyUI(pageWithSidebar(
     tabsetPanel(id = "tabs",
                 tabPanel("Results via Bar-Plot", plotOutput("plot", height="auto")),
                 tabPanel("Results via Table", dataTableOutput("table")),
-                tabPanel("Base data for Key", dataTableOutput("index.table")),
+                tabPanel("Base data for Quota", dataTableOutput("index.table")),
                 tabPanel("Explanation", includeMarkdown("markdown.md"))
                 )
     )

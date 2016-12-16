@@ -61,8 +61,6 @@ get.ref.table <- function(input.list, year.range = c(2014, 2015), which.source =
   all.applic <- sum(num.applic$applic, na.rm = TRUE)
   res.applic <- cbind(num.applic, quota.applic)
   
-  #cat("\n\n\n\n",str(total.year))
-  #cat("\n", which.idx)
   # Calculate the chosen index with all the pre-set values
   res.key <- calc.key(total.year, which = which.idx, weight.pop = w.pop, 
                       weight.gdp = w.gdp, weight.unemp = w.unemp, 
@@ -78,22 +76,22 @@ get.ref.table <- function(input.list, year.range = c(2014, 2015), which.source =
   res.mat     <- merge(res.mat, res.accept, by = "country")
   res.mat$good <- res.mat$quota.accept >= res.mat$quota.key
   res.output  <- res.mat[, c(1,2,4,6,3,5,7)]
-  colnames(res.output) <- c("country", "applic.by.key", 
-                            "actual.applic", "accepted.applic",
-                            "ratio.key", "ratio.applic", "ratio.accepted")
+  colnames(res.output) <- c("country", "quota", 
+                            "applications", "accepted",
+                            "share.quota", "share.applications", "share.accepted")
   if (per.capita) {
     capita <- aggregate(pop ~ country, subset(total, 
                                               (country %in% total.year$country) & (year %in% (year.range[1]:year.range[2]))), mean)
-    patt.abs <- grep("country|ratio", colnames(res.output), invert = TRUE)
+    patt.abs <- grep("country|share", colnames(res.output), invert = TRUE)
     res.output[, patt.abs] <- apply(res.output[, patt.abs], 2, function(x)(x*1)/round(capita$pop/1000,2))
   }
-  return(res.output[order(res.output$ratio.key, decreasing = TRUE), ])
+  return(res.output[order(res.output$share.quota, decreasing = TRUE), ])
   
 }
 
-get.ref.plot <- function(input.list, year.range = c(2014, 2015), which.source = "unhcr", show.applic = TRUE, ratios = TRUE,
-                        countries = c("1", "2"), which.idx = "grech", w.pop = 0.4, w.gdp = 0.4, w.asyl = 0.1, w.unemp = 0.1){
-  show.applic <- TRUE
+get.ref.plot <- function(input.list, year.range = c(2014, 2015), which.source = "unhcr", which.show = "ratio",
+                         countries = c("1", "2"), which.idx = "grech", w.pop = 0.4, w.gdp = 0.4, w.asyl = 0.1, w.unemp = 0.1){
+
   # Extract data
   asyl.ls     <- input.list$asyl
   total       <- input.list$total
@@ -133,34 +131,43 @@ get.ref.plot <- function(input.list, year.range = c(2014, 2015), which.source = 
   all.accept    <- sum(num.accept$accept, na.rm = TRUE)
   res.accept    <- cbind(num.accept, quota.accept)
   res.mat       <- merge(res.key, res.accept, by = "country") 
-
-  if (show.applic){
-    # Merge results with number of asylum applications
-    res.mat <- merge(res.mat, res.applic, by = "country")
-    # Legend stuff
-    leg.labels  <- c("Ref. by Key", "Applications", "Accepted Applications")
-    leg.cols    <- cbPalette[c(6, 5, 2)]
-  } else {
-    # Legend stuff
-    leg.labels  <- c("Ref. by Key", "Accepted Applications")
-    leg.cols    <- cbPalette[c(6, 2)]
-  }
-
+  
+  # Merge results with number of asylum applications
+  res.mat <- merge(res.mat, res.applic, by = "country")
+  # Legend stuff
+  leg.labels  <- c("Refugees by quota", "Applications in reality", "Accepted Applications in reality")
+  leg.cols    <- cbPalette[c(6, 5, 2)]
+  
   # Make Index variable for countries that perform better than by index
   res.mat$good  <- res.mat$quota.accept >= res.mat$quota.key
   # Sort countries by ratio of key (starting with the highest)
-  res.mat <- res.mat[order(res.mat$quota.key, decreasing=TRUE), ]
+  res.order <- order(res.mat$quota.key, decreasing = TRUE)
+  res.mat <- res.mat[res.order, ]
   
-  if ( !ratios ) {
-    legend_title <- "Number of entire ..."
+  if ( which.show == "abs" ) {
+    legend_title <- expression(paste(bold("Number of ...")))
     res.mat$quota.key <- res.mat$key
     res.mat$quota.accept <- res.mat$accept
     res.mat$quota.applic <- res.mat$applic
-    gg.ylab <- "Numbers"
-  } else {
-    gg.ylab <- "Different Quotas"
+    #gg.ylab <- "Number of ..."
+  } else if (which.show == "per"){
+    legend_title <- expression(paste(bold("Number of ... per 1000 inhabitants")))
+    res.mat$quota.key <- res.mat$key
+    res.mat$quota.accept <- res.mat$accept
+    res.mat$quota.applic <- res.mat$applic
+    #gg.ylab <- "Asylum Applications per 1000 inhabitants"
+    capita <- aggregate(pop ~ country, 
+                        subset(total, (country %in% total.year$country) & (year %in% (year.range[1]:year.range[2]))), 
+                        FUN = mean)
+    patt.abs <- grep("quota", colnames(res.mat))
+    res.mat[, patt.abs] <- apply(res.mat[, patt.abs], 2, function(x)(x*1)/round(capita$pop[res.order]/1000, 2))
+  } else if (which.show == "ratio") {
+    # Legend title of plot
+    legend_title <- expression(bold(paste("Share of ...")))
+    #gg.ylab <- " Share of ..."
   }
-  gg.ylab <- NULL
+  #legend_title <- ""
+  gg.ylab <- ""
   # Final Subset
   res.quota   <- res.mat[,grep("quota|country|good", colnames(res.mat))]
   res.quota <- res.quota[, order(colnames(res.quota), decreasing = TRUE)]
@@ -176,7 +183,9 @@ get.ref.plot <- function(input.list, year.range = c(2014, 2015), which.source = 
     scale_fill_manual(legend_title, labels = leg.labels, values = leg.cols, guide = guide_legend(reverse = TRUE)) + 
     scale_x_discrete(limits = rev(unique(melt.quota[[1]]$country))) +
     labs(y = gg.ylab, x = xlab.low) +
-    scale_y_continuous(labels = comma)
+    scale_y_continuous(labels = comma)+
+    theme(legend.position="bottom")+
+    guides(fill = guide_legend(title.position="top", title.hjust = 0.5))
   q2 <- ggplot(melt.quota[[2]], aes(x = country, y = value, fill = variable)) + 
     geom_bar(stat="identity", position="dodge", colour="black") + 
     coord_flip() +
@@ -186,8 +195,6 @@ get.ref.plot <- function(input.list, year.range = c(2014, 2015), which.source = 
     scale_y_continuous(labels = comma)
   return(list(q1 = q1, q2 = q2))
 }
-
-#get.ref.plot(input.list, show.applic=TRUE, ratios = TRUE)
 
 get.index.data <- function(input.list, year.range = 2015, which.source = "unhcr", countries = c("1", "2")){
   #------------------
@@ -329,19 +336,30 @@ multiplot   <- function(..., plotlist=NULL, file, cols = 1, layout = NULL) {
   }
 }
 
-# Some function to make multiple ggplots with shared legend
-# not used atm
-grid_arrange_shared_legend <- function(...) {
+# https://github.com/tidyverse/ggplot2/wiki/Share-a-legend-between-two-ggplot2-graphs
+grid_arrange_shared_legend <- function(..., ncol = length(list(...)), nrow = 1, position = c("bottom", "right")) {
+  
   plots <- list(...)
-  g <- ggplotGrob(plots[[1]] + theme(legend.position="bottom"))$grobs
+  position <- match.arg(position)
+  g <- ggplotGrob(plots[[1]] + theme(legend.position = position))$grobs
   legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
   lheight <- sum(legend$height)
-  grid.arrange(
-    do.call(arrangeGrob, lapply(plots, function(x)
-      x + theme(legend.position="none"))),
-    legend,
-    ncol = 2,
-    heights = unit.c(unit(1, "npc") - lheight, lheight))
+  lwidth <- sum(legend$width)
+  gl <- lapply(plots, function(x) x + theme(legend.position="none"))
+  gl <- c(gl, ncol = ncol, nrow = nrow)
+  
+  combined <- switch(position,
+                     "bottom" = arrangeGrob(do.call(arrangeGrob, gl),
+                                            legend,
+                                            ncol = 1,
+                                            heights = unit.c(unit(1, "npc") - lheight, lheight)),
+                     "right" = arrangeGrob(do.call(arrangeGrob, gl),
+                                           legend,
+                                           ncol = 2,
+                                           widths = unit.c(unit(1, "npc") - lwidth, lwidth)))
+  grid.newpage()
+  grid.draw(combined)
+  
 }
 
 # Extract legend from ggplot (used)
@@ -355,6 +373,3 @@ g_legend <- function(a.gplot){
 # Colour palette for the colour blind (used)
 cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-
-# Legend title of plot
-legend_title <- "Share of entire ..."

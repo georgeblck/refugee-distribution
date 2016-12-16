@@ -1,6 +1,7 @@
+[![alt text][2]][1]
+  [1]: http://statistikwerkstatt.org/shiny/refugee-distribution/shiny/
+  [2]: german_flag_small.png (German Version)
 ## What
-Link zu neuem artikel
-Link zu deutscher version
 
 In September 2015 the European Commission proposed a plan to relocate 120'000 refugees from Greece, Italy & Hungary to all European countries. 
 This was supposed to be done by a *mandatory distribution key using objective and quantifiable criteria*, consisting of the following variables and weightings:
@@ -13,8 +14,18 @@ The details and consequences of this proposal are in itself very interesting but
 
 We wanted to take this idea of a distribution key one step further. 
 
+## Why
+
+There are two main reasons for this visualization. We want to:
+
+1. provide an easily accessible overview of the distribution of (accepted) Asylum Applications in the EU
+2. provide a sensible and changeable benchmark of how many/whare share of refugees each country should accept 
+
+**Summed up, we wanted to put the omnipresent discussion of certain European countries taking too few/many refugees on a more factual basis.**
+
+Naturally, this premise depends a lot on the quality of the data. That is why we were very dilligent in choosing the data sets (see the section below).
+
 ## How 
-todo
 #### The Sliders
 
 * The first four sliders can be used to adjust the weightings of the distribution key. The original setting (0.4/0.4/0.1/0.1) is the one proposed by the EU. The values and limits of the sliders are reactive to each other and can sometimes make problems!
@@ -30,16 +41,7 @@ todo
 * Data Sources: We provide different data sources for the Asylum Applications (not the Accepted ones) because why not?
 * Which Key: The Grech-Key should always be used as it corrected two big flaws of the EU key (read up in Grech's article). We provide the original only because it is the original.
 
-## Why
 
-There are two main reasons for this visualization. We want to
-
-1. provide an easily accessible overview of the distribution of (accepted) Asylum Applications in the EU
-2. provide a sensible and changeable benchmark of how many/whare share of refugees each country should accept 
-
-Summed up, we wanted to put the omnipresent discussion of certain European countries taking too few/many refugees on a more factual basis.
-
-Naturally, this premise depends greatly on the quality of the data. That is why we were very dilligent in choosing the data sets (see the section below).
 
 ## Data sources
 All of the data was accessed between the 11th and 14th of June, 2016 and again on the 10th of October, 2016. We haven't made an effort to incorporate the most recent data but this will happen in the future.
@@ -73,6 +75,8 @@ Regarding the distinction between novel and repeated Asylum Applications, we quo
 [The original formula of the EU](http://ec.europa.eu/dgs/home-affairs/what-we-do/policies/european-agenda-migration/proposal-implementation-package/docs/proposal_for_regulation_of_ep_and_council_establishing_a_crisis_relocation_mechanism_-_annex_en.pdf)
 
 [The original journal article by Philip Grech (read this to understand everything)](http://eup.sagepub.com/content/early/2016/05/26/1465116516649244.abstract)
+
+[A recent blog post on the subject, written by Philip Grech](http://blogs.lse.ac.uk/europpblog/2016/08/30/why-the-eu-still-requires-a-fairer-formula-for-distributing-refugees/)
 
 [NY Times article on the subject with nice visualizations (September 2015)](http://www.nytimes.com/interactive/2015/09/04/world/europe/europe-refugee-distribution.html?_r=1)
 
