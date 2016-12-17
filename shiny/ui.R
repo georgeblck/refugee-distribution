@@ -3,10 +3,12 @@ library(shiny)
 library(reshape)
 library(ggplot2)
 library(Cairo)
+options(shiny.usecairo=T)
 library(gridExtra)
 library(scales)
 library(shinyjs)
 library(markdown)
+require(grid)
 
 # For AWS
 #sudo su - -c "R -e \"install.packages(c('reshape','ggplot2', 'gridExtra', 

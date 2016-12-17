@@ -122,7 +122,7 @@ shinyServer(function(input, output, session) {
       session$clientData$output_plot_width*(3/5)
     }, width = function() {
       session$clientData$output_plot_width*(8/7)
-    })
+    }, res = 100)
     
     # Table output
     output$table <- renderDataTable({

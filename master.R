@@ -5,13 +5,7 @@
 
 # GDP Switzerland 2015
 
-# 4. Reiter mit Text etc.
-# accepted oder was
-# Maybe: choose/hide sliders?
 # sometimes germany and NL become switched??
-
-
-# In the end: remove all unnecessary output from the function calls
 
 
 rm(list = ls())
@@ -62,7 +56,7 @@ w.unemp <- 1 - (w.pop + w.gdp + w.asyl)
 #--------------
 
 aha <- get.ref.table(input.list)
-aha$good <- aha$ratio.accepted >= aha$ratio.key
+aha$good <- aha$share.accepted >= aha$share.quota
 df <- merge(aha, get.index.data(input.list, year.range = 2013), by = c("country"))
 
 df$gdpper <- df$gdp.per.capita
@@ -70,7 +64,7 @@ df$jitper <- jitter(df$gdpper)
 df$jitasyl <- jitter(df$unemp)
 #df$good <- df$quota.accept>=df$quota.key
 ggplot(df, aes(x = gdpper, y = population)) +
-  geom_point(data = df, aes(x = jitper, y = population, size = ratio.accepted, colour = good), alpha = .4)+
+  geom_point(data = df, aes(x = jitper, y = population, size = share.accepted, colour = good), alpha = .4)+
   geom_text(data=df, aes(x=jitper, y=population, label = country)) + 
   scale_size(range = c(1,30)) + xlim(15000, 50000)  + guides(colour=FALSE)+ guides(size=FALSE) + 
   scale_y_log10(breaks = c(1,10,100)*1000000, limits = c(400000, 100000000))

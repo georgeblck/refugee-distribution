@@ -175,8 +175,8 @@ get.ref.plot <- function(input.list, year.range = c(2014, 2015), which.source = 
   melt.quota  <- melt(res.quota, id.vars= c("country", "good"))
   melt.quota  <- split(melt.quota, melt.quota$good)
   # Plot it
-  xlab.low    <- expression(Proportion~of~Asylum~Applications~bold(paste("lower than proposed")))
-  xlab.high   <- expression(Proportion~of~Asylum~Applications~bold(paste("higher than proposed")))
+  xlab.low    <- expression(Proportion~of~Asylum~Applications~bold(paste("lower than quota")))
+  xlab.high   <- expression(Proportion~of~Asylum~Applications~bold(paste("higher than quota")))
   q1 <- ggplot(melt.quota[[1]], aes(x = country, y = value, fill = variable)) + 
     geom_bar(stat="identity", position="dodge", colour="black") + 
     coord_flip() + 
@@ -352,11 +352,11 @@ grid_arrange_shared_legend <- function(..., ncol = length(list(...)), nrow = 1, 
                      "bottom" = arrangeGrob(do.call(arrangeGrob, gl),
                                             legend,
                                             ncol = 1,
-                                            heights = unit.c(unit(1, "npc") - lheight, lheight)),
+                                            heights = grid::unit.c(unit(1, "npc") - lheight, lheight)),
                      "right" = arrangeGrob(do.call(arrangeGrob, gl),
                                            legend,
                                            ncol = 2,
-                                           widths = unit.c(unit(1, "npc") - lwidth, lwidth)))
+                                           widths = grid::unit.c(unit(1, "npc") - lwidth, lwidth)))
   grid.newpage()
   grid.draw(combined)
   
