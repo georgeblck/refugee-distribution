@@ -1,13 +1,14 @@
-[![alt text][2]][1]
+[![german flag][2]][1] [![uk flag][4]][3] 
   [1]: http://statistikwerkstatt.org/shiny/refugee-verteilung/shiny/
   [2]: german_flag_small.png (German Version)
-
+  [3]: http://statistikwerkstatt.org/shiny/refugee-distribution/shiny/
+  [4]: uk_flag_small.png (English Version)
 Acronyms:
 * AA: Asylum Applications
 * DK: Distribution Key/Quota
 
 ## About this visualization
-
+___
 In September 2015 the European Commission proposed a plan to relocate 120'000 refugees from Greece, Italy & Hungary to all European countries.
 This was supposed to be done by a *mandatory distribution key using objective and quantifiable criteria*, consisting of the following variables and weightings:
 > * the size of the population (40%, positive weight),
@@ -36,6 +37,7 @@ Naturally, this premise depends a lot on the quality of the data. That is why we
 * **Creating a better formula**: Even after Philip Grechs mathematical corrections, there are still some obvious flaws in calculating a DK this way (e.g. the variable selection). Because of this, a few other different approaches have been proposed. If you are interested, there is a collection of links in the section *Other sources*.
 
 ## How to use this visualization
+___
 #### The Main Options
 
 * The first slider determines both
@@ -61,6 +63,7 @@ It is possible to hide these sliders.
 * Which DK to use: The Grech-Key should always be used as it corrected two big flaws of the EU key (read up in Grech's article). We provide the original only because it is the original.
 
 ## Data sources
+___
 All of the data was accessed between the 11th and 14th of June, 2016 and again on the 10th of October, 2016. We haven't made an effort to incorporate the most recent data but this will happen in the future.
 
 #### Eurostat
@@ -87,6 +90,7 @@ Regarding the distinction between novel and repeated AA, we quote from the UNHCR
 * GDP data for Switzerland in the year 2015 is still missing!
 
 ## Other sources (sorted by relevance)
+___
 [Press release of the EU on the distribution key with numbers and explanations](http://europa.eu/rapid/press-release_MEMO-15-5597_en.htm)
 
 [The original formula of the EU](http://ec.europa.eu/dgs/home-affairs/what-we-do/policies/european-agenda-migration/proposal-implementation-package/docs/proposal_for_regulation_of_ep_and_council_establishing_a_crisis_relocation_mechanism_-_annex_en.pdf)
@@ -102,6 +106,7 @@ Regarding the distinction between novel and repeated AA, we quote from the UNHCR
 [A different but unused distribution key by Luc Bovens & Anna Bartsch](http://www.voxeurop.eu/en/content/article/5041680-towards-fairer-distribution-asylum-seekers)
 
 ## Thank-yous
+___
 
 We couldn't have done this without
 
@@ -116,6 +121,7 @@ We couldn't have done this without
 * [Philip Grech](http://www.necom.ethz.ch/people/person-detail.html?persid=115265)
 
 ## Contact
+___
 
 If you have suggestions how the app could be improved, feel free to write us at:
 
