@@ -1,47 +1,64 @@
 [![alt text][2]][1]
-  [1]: http://statistikwerkstatt.org/shiny/refugee-distribution/shiny/
+  [1]: http://statistikwerkstatt.org/shiny/refugee-verteilung/shiny/
   [2]: german_flag_small.png (German Version)
-## What
 
-In September 2015 the European Commission proposed a plan to relocate 120'000 refugees from Greece, Italy & Hungary to all European countries. 
+Acronyms:
+* AA: Asylum Applications
+* DK: Distribution Key/Quota
+
+## About this visualization
+
+In September 2015 the European Commission proposed a plan to relocate 120'000 refugees from Greece, Italy & Hungary to all European countries.
 This was supposed to be done by a *mandatory distribution key using objective and quantifiable criteria*, consisting of the following variables and weightings:
 > * the size of the population (40%, positive weight),
 > * the GDP (40%, positive weight),
 > * the average number of past asylum applications (10%, negative weight) and
 > * the unemployment rate (10%, negative weight).
 
-The details and consequences of this proposal are in itself very interesting but are not important here.
+The formula has since been corrected by the swiss scientist Philip Grech, as it had some mathematical flaws.
 
-We wanted to take this idea of a distribution key one step further. 
+With this visualization you can see the results of applying this quota on different time periods and compare it to the reality.
 
-## Why
+### Motivation
 
 There are two main reasons for this visualization. We want to:
 
-1. provide an easily accessible overview of the distribution of (accepted) Asylum Applications in the EU
-2. provide a sensible and changeable benchmark of how many/whare share of refugees each country should accept 
+1. provide an easily accessible overview of the distribution of (accepted) AA in the EU
+2. provide a sensible and changeable benchmark of how many/what share of refugees each country should accept
 
 **Summed up, we wanted to put the omnipresent discussion of certain European countries taking too few/many refugees on a more factual basis.**
 
-Naturally, this premise depends a lot on the quality of the data. That is why we were very dilligent in choosing the data sets (see the section below).
+Naturally, this premise depends a lot on the quality of the data. That is why we were very dilligent in choosing the data sets (see the section further below).
 
-## How 
-#### The Sliders
+### What this is not about
+* **Politics**: The political intricacies and consequences of this proposal are in itself very interesting but are not the focus of this visualization. If you are interested, start by reading the [original press release](http://europa.eu/rapid/press-release_MEMO-15-5597_en.htm).
 
-* The first four sliders can be used to adjust the weightings of the distribution key. The original setting (0.4/0.4/0.1/0.1) is the one proposed by the EU. The values and limits of the sliders are reactive to each other and can sometimes make problems!
-* The fifth slider determines 
-	* how many refugees are to be distributed (by specifing the year range) and
-	* on which data the distribution key is calculated (the year **prior** to the lower range)
+* **Creating a better formula**: Even after Philip Grechs mathematical corrections, there are still some obvious flaws in calculating a DK this way (e.g. the variable selection). Because of this, a few other different approaches have been proposed. If you are interested, there is a collection of links in the section *Other sources*.
 
-#### The advanced options
+## How to use this visualization
+#### The Main Options
 
-* Absolute/ratios (only Bar-Plot): The ratios are good because they are independent of *how many* refugees shall be distributed! However, most should find the absolute numbers more interesting.
-* Per Capita Asylum Applications (only Table): This should be self explanatory!
-* Country groups: This should also be self explanatory!
-* Data Sources: We provide different data sources for the Asylum Applications (not the Accepted ones) because why not?
-* Which Key: The Grech-Key should always be used as it corrected two big flaws of the EU key (read up in Grech's article). We provide the original only because it is the original.
+* The first slider determines both
+  * **how many** refugees are to be distributed and
+  * on which data basis the DK is calculated: the year **prior** to the chosen time range.
+* The second choice concerns the variables shown in the plot or table. There are three options:
+  * Show the **EU-wide ratio** of refugees/AA that each country has or should accept
+  * Show the **total number** of refugees/AA that each country has or should accept
+  * Show the **total number *per 1000 inhabitants*** of refugees/AA that each country has or should accept
+  * **Notes on the ratio**:
+      * The ratios are good because they are independent of _how many_ AA are to be distributed! However, most should find the absolute numbers more interesting.
+      * A countries share of _accepted_ AA can be higher than its share of general AA even if it only accepts a small percentage of AA.
+* Adding more countries is self-explanatory
 
+#### Adjusting the weights of the key
 
+The four sliders can be used to adjust the weightings of the DK. The original setting - 0.4/0.4/0.1/0.1 - is the one proposed by the EU. The values and limits of the sliders are reactive to each other and can sometimes cause problems!
+It is possible to hide these sliders.
+
+#### The Advanced Options
+
+* Data Sources: Because it is possible, we provide different data sources for the data on Asylum Applications (_not the Accepted ones_).
+* Which DK to use: The Grech-Key should always be used as it corrected two big flaws of the EU key (read up in Grech's article). We provide the original only because it is the original.
 
 ## Data sources
 All of the data was accessed between the 11th and 14th of June, 2016 and again on the 10th of October, 2016. We haven't made an effort to incorporate the most recent data but this will happen in the future.
@@ -57,10 +74,10 @@ The biggest part of data came from [Eurostat](http://ec.europa.eu/eurostat). We 
 * Quarterly rounded data on **Accepted Asylum Applications** (code: migr_asydcfstq)
 
 #### UNHCR
-To provide another source, data on Asylum Applications was also taken from the [UNHCR database on Population Statistics](http://popstats.unhcr.org/en/overview). Specifically the monthly data on Asylum-Seekers from 1999 to April 2016.
+To provide another source, data on AA was also taken from the [UNHCR database on Population Statistics](http://popstats.unhcr.org/en/overview). Specifically the monthly data on Asylum-Seekers from 1999 to April 2016.
 
-Regarding the distinction between novel and repeated Asylum Applications, we quote from the UNHCR webpage:
-> Where possible, figures exclude repeat/re-opened asylum applications and applications lodged on appeal or with courts. 
+Regarding the distinction between novel and repeated AA, we quote from the UNHCR webpage:
+> Where possible, figures exclude repeat/re-opened asylum applications and applications lodged on appeal or with courts.
 
 #### Missing data (Liechtenstein & Switzerland)
 
@@ -100,6 +117,6 @@ We couldn't have done this without
 
 ## Contact
 
-If you have suggestions how the app could be improved, feel free to write us at: 
+If you have suggestions how the app could be improved, feel free to write us at:
 
 statistikwerkstatt-at-posteo.de
