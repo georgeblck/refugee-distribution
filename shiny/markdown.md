@@ -7,6 +7,8 @@ Acronyms:
 * AA: Asylum Applications
 * DK: Distribution Key/Quota
 
+### Momentan gibt es die Erklärung nur im Englischen:
+
 ## About this visualization
 ___
 In September 2015 the European Commission proposed a plan to relocate 120'000 refugees from Greece, Italy & Hungary to all European countries.

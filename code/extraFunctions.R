@@ -76,16 +76,16 @@ get.ref.table <- function(input.list, year.range = c(2014, 2015), which.source =
   res.mat     <- merge(res.mat, res.accept, by = "country")
   res.mat$good <- res.mat$quota.accept >= res.mat$quota.key
   res.output  <- res.mat[, c(1,2,4,6,3,5,7)]
-  colnames(res.output) <- c("country", "quota", 
-                            "applications", "accepted",
-                            "share.quota", "share.applications", "share.accepted")
+  colnames(res.output) <- c("Land", "schluessel", 
+                            "antraege", "angenommen",
+                            "anteil.schluessel", "anteil.antraege", "anteil.angenommen")
   if (per.capita) {
     capita <- aggregate(pop ~ country, subset(total, 
                                               (country %in% total.year$country) & (year %in% (year.range[1]:year.range[2]))), mean)
-    patt.abs <- grep("country|share", colnames(res.output), invert = TRUE)
+    patt.abs <- grep("Land|anteil", colnames(res.output), invert = TRUE)
     res.output[, patt.abs] <- apply(res.output[, patt.abs], 2, function(x)(x*1)/round(capita$pop/1000,2))
   }
-  return(res.output[order(res.output$share.quota, decreasing = TRUE), ])
+  return(res.output[order(res.output$anteil.schluessel, decreasing = TRUE), ])
   
 }
 
@@ -135,7 +135,7 @@ get.ref.plot <- function(input.list, year.range = c(2014, 2015), which.source = 
   # Merge results with number of asylum applications
   res.mat <- merge(res.mat, res.applic, by = "country")
   # Legend stuff
-  leg.labels  <- c("Refugees by quota", "Applications in reality", "Accepted Applications in reality")
+  leg.labels  <- c("Asylanträgen laut Schlüssel", "Tatsächlichen Asylanträgen", "Tatsächlichen angenommenen Asylanträgen")
   leg.cols    <- cbPalette[c(6, 5, 2)]
   
   # Make Index variable for countries that perform better than by index
@@ -145,13 +145,13 @@ get.ref.plot <- function(input.list, year.range = c(2014, 2015), which.source = 
   res.mat <- res.mat[res.order, ]
   
   if ( which.show == "abs" ) {
-    legend_title <- expression(paste(bold("Number of ...")))
+    legend_title <- expression(paste(bold("Anzahl an ...")))
     res.mat$quota.key <- res.mat$key
     res.mat$quota.accept <- res.mat$accept
     res.mat$quota.applic <- res.mat$applic
     #gg.ylab <- "Number of ..."
   } else if (which.show == "per"){
-    legend_title <- expression(paste(bold("Number of ... per 1000 inhabitants")))
+    legend_title <- expression(paste(bold("Anzahl an ... pro 1000 Einwohner")))
     res.mat$quota.key <- res.mat$key
     res.mat$quota.accept <- res.mat$accept
     res.mat$quota.applic <- res.mat$applic
@@ -163,7 +163,7 @@ get.ref.plot <- function(input.list, year.range = c(2014, 2015), which.source = 
     res.mat[, patt.abs] <- apply(res.mat[, patt.abs], 2, function(x)(x*1)/round(capita$pop[res.order]/1000, 2))
   } else if (which.show == "ratio") {
     # Legend title of plot
-    legend_title <- expression(bold(paste("Share of ...")))
+    legend_title <- expression(bold(paste("Anteil an ...")))
     #gg.ylab <- " Share of ..."
   }
   #legend_title <- ""
@@ -175,8 +175,8 @@ get.ref.plot <- function(input.list, year.range = c(2014, 2015), which.source = 
   melt.quota  <- melt(res.quota, id.vars= c("country", "good"))
   melt.quota  <- split(melt.quota, melt.quota$good)
   # Plot it
-  xlab.low    <- expression(Proportion~of~Asylum~Applications~bold(paste("lower than quota")))
-  xlab.high   <- expression(Proportion~of~Asylum~Applications~bold(paste("higher than quota")))
+  xlab.low    <- expression(Anteil~an~Asylanträgen~ist~bold(paste("geringer als laut Schlüssel")))
+  xlab.high   <- expression(Anteil~an~Asylanträgen~ist~bold(paste("höher als laut Schlüssel")))
   q1 <- ggplot(melt.quota[[1]], aes(x = country, y = value, fill = variable)) + 
     geom_bar(stat="identity", position="dodge", colour="black") + 
     coord_flip() + 
@@ -215,7 +215,7 @@ get.index.data <- function(input.list, year.range = 2015, which.source = "unhcr"
   # Sort the data
   total.year <- total.year[, c(1, 5, 3, 4, ncol(total.year), 6)]
   # Name the data for good viewing
-  colnames(total.year) <- c("country", "population", "gdp", "unemp.rate", "asyl.per.million.capita", "gdp.per.capita")
+  colnames(total.year) <- c("land", "einwohnerzahl", "bip", "arbeitslosigkeit", "asylantraege.per.mille", "bip.pro.kopf")
   return(total.year)
 }
 

@@ -16,15 +16,15 @@ shinyServer(function(input, output, session) {
     # Hidden Block 1
     # Show only when on one of the two Results tabs
     shinyjs::toggle(id = "only.results.options", anim = TRUE, 
-                    condition = any(grep("Results", input$tabs)),  
+                    condition = any(grep("Ergebnisse", input$tabs)),  
                     animType = "slide")
     # Hidden Block 1.1 & 1.2
     # Show only when on plot or table
     shinyjs::toggle(id = "only.plot.options", anim = TRUE, 
-                    condition = any(grep("Plot", input$tabs)),  
+                    condition = any(grep("Grafik", input$tabs)),  
                     animType = "slide")
     shinyjs::toggle(id = "only.table.options", anim = TRUE, 
-                    condition = any(grep("Table", input$tabs)),  
+                    condition = any(grep("Tabelle", input$tabs)),  
                     animType = "slide")
     # ON-CLICK: Show/Hide Hidden Block 1.3
     shinyjs::onclick("show.slider.weights",
@@ -32,12 +32,12 @@ shinyServer(function(input, output, session) {
     # Hidden Block 2
     # Show only when on "Base-Data" tab
     shinyjs::toggle(id = "only.base.options", anim = TRUE, 
-                    condition = any(grep("Data", input$tabs, ignore.case = TRUE)),  
+                    condition = any(grep("Datenbasis", input$tabs, ignore.case = TRUE)),  
                     animType = "slide")
     # Hidden Block 3
     # Show only when NOT on the "Explanation" tab
     shinyjs::toggle(id = "not.explanation.options", anim = TRUE, 
-                    condition = !any(grep("Explanation", input$tabs, ignore.case = TRUE)),  
+                    condition = !any(grep("Erklärung", input$tabs, ignore.case = TRUE)),  
                     animType = "slide")
     # ON-CLICK: Show/Hide Hidden Block 3.1
     shinyjs::onclick("show.more.options",
@@ -45,12 +45,12 @@ shinyServer(function(input, output, session) {
     # Hidden Block 3.1.1
     # Only NOT Show when on "Base-Var" tab
     shinyjs::toggle(id = "not.base.options", anim = TRUE, 
-                    condition = !any(grep("Data", input$tabs, ignore.case = TRUE)),  
+                    condition = !any(grep("Datenbasis", input$tabs, ignore.case = TRUE)),  
                     animType = "slide")
     # Hidden Block 4 (Main-Panel)
     # Only Show when NOT on Explanation/Base-Var tab
     shinyjs::toggle(id = "show.header", anim = TRUE, 
-                    condition = !any(grep("Explanation", input$tabs, ignore.case = TRUE)),  
+                    condition = !any(grep("Erklärung", input$tabs, ignore.case = TRUE)),  
                     animType = "slide")
   
     ############################
@@ -59,17 +59,17 @@ shinyServer(function(input, output, session) {
     # Thanks to this thread:
     # http://stackoverflow.com/questions/18700589/interactive-reactive-change-of-min-max-values-of-sliderinput
     output$gdp.slider <- renderUI({
-      sliderInput("w.gdp", "Weight of GDP (nominal)", min = 0,  max = 1 - input$w.pop, 
+      sliderInput("w.gdp", "Gewicht des BIP", min = 0,  max = 1 - input$w.pop, 
                   value = min(0.4, 1 - input$w.pop), step = 0.1)  
     })
     output$asyl.slider <- renderUI( {
-      sliderInput("w.asyl", "Weight of Asylum Applications per capita from the preceeding 5 years", 
+      sliderInput("w.asyl", "Gewicht der bisherigen Asylbelastung", 
                   min = 0,  max = round((1 - input$w.pop - max(c(0,input$w.gdp), na.rm = TRUE)), 1), 
                   value = min(0.1,round((1 - input$w.pop - max(c(0,input$w.gdp), na.rm = TRUE)), 1)), 
                   step = 0.1)  
     })
     output$unemp.slider <- renderUI( {
-      sliderInput("w.unemp", "Weight of unemployment rate", 
+      sliderInput("w.unemp", "Gewicht der Arbeitslosigkeitsrate", 
                   min = 0,  max = round((1 - input$w.pop - max(c(0,input$w.gdp), na.rm = TRUE)- 
                                            max(c(0,input$w.asyl), na.rm = TRUE)), 1), 
                   value = min(0.1, round((1 - input$w.pop - max(c(0,input$w.gdp), na.rm = TRUE)- 
@@ -79,32 +79,31 @@ shinyServer(function(input, output, session) {
 
     # "Subtitle" output above the main plots/tables
     output$header.text <- renderUI({
-      if (any(grep("Data", input$tabs, ignore.case = TRUE))){
-        res.string <- paste("The distribution quota is calculated with data from the year preceeding the chosen time period.<br> 
-                            E.g. if Asylum Applications from the years 2015-2016 shall be distributed, 
-                            the quota is computed with each countries statistics from the year 2014.")
+      if (any(grep("datenbasis", input$tabs, ignore.case = TRUE))){
+        res.string <- paste("Der Verteilungsschlüssel wird mit den Daten aus dem Jahr vor der gewählten Zeitperiode berrechnet.<br>
+Z.B. wenn die Asylanträge aus den Jahren 2015-2016 verteilt werden sollen, wird der Schlüssel mit den Länder-Statistiken aus dem Jahr 2014 berechnet.")
       } else {      
           ref.numbers <- get.ref.numbers(input.list, year.range = input$year.range, 
                            which.source = input$source, countries = input$countries)
-        str1 <- paste("From the years<b>", input$year.range[1], "</b>to<b>", input$year.range[2], 
+        str1 <- paste("In den Jahren<b>", input$year.range[1], "</b>bis<b>", input$year.range[2], "</b>stellten<b>",
                       format(ref.numbers[1], big.mark = ",", scientific = FALSE), 
-                      "</b>people applied for asylum in the selected<b>", 
-                      ref.numbers[3],"</b>european countries."
+                      "</b> Menschen Asylanträge in den ausgewählten<b>", 
+                      ref.numbers[3],"</b>europäischen Ländern."
                       )
           str2 <- paste("<b>", format(ref.numbers[2], big.mark = ",", scientific = FALSE), "(", 
                         round(ref.numbers[2]/ref.numbers[1], 4)*100,
-                        "%)</b> of these applications were accepted.")
-          if (any(grep("Plot", input$tabs))){
-            ref.var <- c("<i>blue</i>", "<i>orange</i>", "<i>yellow</i>")
-            str3 <- paste0("The below representation shows a <b>theoretical</b> scenario what would happen 
-  if <b>all</b> these Asylum Applications would have been accepted and then distributed across Europe by a fair quota (", ref.var[1],").
-  This scenario is compared to the <b>actual</b> distribution of (Accepted) Asylum Applications (", ref.var[2]," & " ,ref.var[3],").<br> 
-                        For more information have a look at the Explanation!")
+                        "%)</b> dieser Anträge wurden akzeptiert.")
+          if (any(grep("Grafik", input$tabs))){
+            ref.var <- c("<i>blau</i>", "<i>orange</i>", "<i>gelb</i>")
+            str3 <- paste0("Die folgende Grafik zeigt ein <b>theoretisches</b> Szenario 
+in dem europaweit <b>alle</b> Asylanträge akzeptiert und dann mithilfe eines fairen Schlüssels (", ref.var[1],") in Europa verteilt werden würden.
+Dieses Szenario wird mit der <b>tatsächlichen</b> Verteilung der gestellten Asylanträgen (", ref.var[3],"), bzw. angenommenen Asylanträgen (", ref.var[2],") verglichen.<br>
+Für mehr Informationen schau dir die Erklärung an.")
           } else {
-            str3 <- paste0("The below representation shows a <b>theoretical</b> scenario what would happen 
-  if <b>all</b> these Asylum Applications would have been accepted and then distributed across Europe by a fair quota. 
-  This scenario is compared to the <b>actual</b> distribution of (Accepted) Asylum Applications.<br> 
-                        For more information have a look at the Explanation!")
+            str3 <- paste0("Die folgende Grafik zeigt ein <b>theoretisches</b> Szenario 
+in dem europaweit <b>alle</b> Asylanträge akzeptiert und dann mithilfe eines fairen Schlüssels in Europa verteilt werden würden.
+Dieses Szenario wird mit der <b>tatsächlichen</b> Verteilung der gestellten Asylanträgen, bzw. angenommenen Asylanträgen verglichen.<br>
+Für mehr Informationen schau dir die Erklärung an.")
           }
           res.string <- paste(str1, str2, str3, sep = '<br/>')
       }
