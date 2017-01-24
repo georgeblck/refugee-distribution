@@ -17,6 +17,7 @@ library(Cairo)
 library(gridExtra)
 library(shiny)
 library(scales)
+library(grid)
 
 
 
@@ -25,6 +26,16 @@ library(scales)
 source("code/extraFunctions.R")
 source("code/readandmatchData.R")
 input.list <- list(total = total, asyl = asyl.ls, accept = accept)
+
+ref.plot <- get.ref.plot(input.list, year.range = c(2014,2016),
+             which.source = "unhcr",  which.show = "ratio",
+             which.idx = "grech")   
+#svg(filename = "ratio.svg", width = 12, height = 6, antialias = "default", pointsize = 10)
+grid_arrange_shared_legend_out(ref.plot$q1, ref.plot$q2, nrow = 1, ncol = 2)
+#dev.off()
+
+
+
 all <- get.ref.table(input.list)
 all2 <- get.index.data(input.list)
 
@@ -56,8 +67,8 @@ w.unemp <- 1 - (w.pop + w.gdp + w.asyl)
 #--------------
 
 aha <- get.ref.table(input.list)
-aha$good <- aha$share.accepted >= aha$share.quota
-df <- merge(aha, get.index.data(input.list, year.range = 2013), by = c("country"))
+aha$good <- aha$anteil.angenommen >= aha$anteil.schluessel
+df <- merge(aha, get.index.data(input.list, year.range = 2013), by = c("Land"))
 
 df$gdpper <- df$gdp.per.capita
 df$jitper <- jitter(df$gdpper)

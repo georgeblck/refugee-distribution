@@ -192,7 +192,7 @@ get.ref.plot <- function(input.list, year.range = c(2014, 2015), which.source = 
     scale_fill_manual(legend_title, labels = leg.labels, values = leg.cols) + 
     labs(y = gg.ylab, x = xlab.high) + 
     scale_x_discrete(limits = rev(unique(melt.quota[[2]]$country))) +
-    scale_y_continuous(labels = comma)
+    scale_y_continuous(labels = comma)#+theme(panel.background = element_rect(fill = "black"))
   return(list(q1 = q1, q2 = q2))
 }
 
@@ -349,13 +349,45 @@ grid_arrange_shared_legend <- function(..., ncol = length(list(...)), nrow = 1, 
   gl <- c(gl, ncol = ncol, nrow = nrow)
   
   combined <- switch(position,
-                     "bottom" = arrangeGrob(do.call(arrangeGrob, gl),
+                     "bottom" = arrangeGrob( do.call(arrangeGrob, gl),
                                             legend,
                                             ncol = 1,
                                             heights = grid::unit.c(unit(1, "npc") - lheight, lheight)),
                      "right" = arrangeGrob(do.call(arrangeGrob, gl),
                                            legend,
-                                           ncol = 2,
+                                           ncol = 2, 
+                                           widths = grid::unit.c(unit(1, "npc") - lwidth, lwidth)))
+  grid.newpage()
+  grid.draw(combined)
+  
+}
+
+# Adjusted to include plot title
+grid_arrange_shared_legend_out <- function(..., ncol = length(list(...)), nrow = 1, position = c("bottom", "right")) {
+  
+  plots <- list(...)
+  position <- match.arg(position)
+  g <- ggplotGrob(plots[[1]] + theme(legend.position = position))$grobs
+  legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
+  lheight <- sum(legend$height)
+  lwidth <- sum(legend$width)
+  #str(legend)
+  gl <- lapply(plots, function(x) x + theme(legend.position="none"))
+  gl <- c(gl, ncol = ncol, nrow = nrow)
+  
+  combined <- switch(position,
+                     "bottom" = arrangeGrob( textGrob("Die Verteilung aller Asylsuchenden in Europa mit einem fairen Schlüssel", gp=gpar(fontsize=20)),
+                                             textGrob("Von Januar 2014 bis August 2016 stellten 2,372,375 Menschen Asylanträge in 32 europäischen Ländern. 808,585 (34.08 %) dieser Anträge wurden akzeptiert.
+Die folgende Grafik zeigt ein theoretisches Szenario in dem europaweit alle Asylanträge akzeptiert und dann mithilfe eines fairen Schlüssels (blau) in Europa verteilt werden würden.
+Dieses Szenario wird mit der tatsächlichen Verteilung der gestellten Asylanträgen (gelb), bzw. angenommenen Asylanträgen (orange) verglichen.
+Eine interaktive Visualisierung & mehr Informationen gibt es auf statistikwerkstatt.org", gp=gpar(fontsize=10)),
+                                             do.call(arrangeGrob, gl),
+                                             legend,
+                                             ncol = 1, 
+                                             heights = grid::unit.c(unit(1,"cm"), unit(2, "cm"), unit(1, "npc") - lheight - unit(3,"cm"), lheight)),
+                     "right" = arrangeGrob(do.call(arrangeGrob, gl),
+                                           legend,
+                                           ncol = 2, 
                                            widths = grid::unit.c(unit(1, "npc") - lwidth, lwidth)))
   grid.newpage()
   grid.draw(combined)
