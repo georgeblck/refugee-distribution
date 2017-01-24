@@ -42,7 +42,7 @@ shinyUI(pageWithSidebar(
           div(id = "only.plot.options", style = "padding: 0px;, margin: 0px;",
               selectInput("which.style.plot", "Show which variable in Plot:",
                           choices = c("Share of Refugees" = "ratio", "Number of Refugees" = "abs",
-                                      "Refugees per 1000 inhabitants"= "per"))
+                                      "Refugees per 1000 inhabitants"= "per"), selected = "abs")
           ),
           # Nested Hidden Block 1.1
           # Only show when on table output
