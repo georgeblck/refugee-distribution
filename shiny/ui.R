@@ -42,7 +42,7 @@ shinyUI(pageWithSidebar(
           div(id = "only.plot.options", style = "padding: 0px;, margin: 0px;",
               selectInput("which.style.plot", "Welche Werte sollen angezeigt werden:",
                           choices = c("Anteil an Flüchtlingen" = "ratio", "Anzahl an Flüchtlingen" = "abs",
-                                      "Flüchtlinge pro 1000 Einwohner"= "per"))
+                                      "Flüchtlinge pro 1000 Einwohner"= "per"), selected = "abs")
           ),
           # Nested Hidden Block 1.1
           # Only show when on table output
