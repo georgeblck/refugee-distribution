@@ -1,5 +1,5 @@
-# Autor: njh 
-# Szenarien für eine europäische Lösung der Flüchtlingsproblematik
+# Autor: njh Szenarien für eine europäische Lösung der
+# Flüchtlingsproblematik
 
 # To-DO:
 
@@ -9,7 +9,7 @@
 
 
 rm(list = ls())
-options(scipen=999)
+options(scipen = 999)
 # Load the required packages
 library(reshape)
 library(ggplot2)
@@ -21,7 +21,8 @@ library(scales)
 
 
 
-# Read and match the data (GDP, POP, Unemployment, Asylum applications, etc...)
+# Read and match the data (GDP, POP, Unemployment, Asylum
+# applications, etc...)
 source("code/extraFunctions.R")
 source("code/readandmatchData.R")
 input.list <- list(total = total, asyl = asyl.ls, accept = accept)
@@ -34,9 +35,9 @@ x <- log(aha$applic)
 y <- aha$accept/aha$applic
 col <- log(aha$gdp.per.capita)
 
-qplot(x,y,colour = col, size = aha$unemp) + scale_colour_gradient(limits=c(8, 12), low="red", space="Lab", na.value = "black")
-qplot(mpg, wt, data = mtcars, colour = miss) +
-  scale_colour_gradient(na.value = "black")
+qplot(x, y, colour = col, size = aha$unemp) + scale_colour_gradient(limits = c(8, 
+    12), low = "red", space = "Lab", na.value = "black")
+qplot(mpg, wt, data = mtcars, colour = miss) + scale_colour_gradient(na.value = "black")
 
 #-------------
 # Shiny Input
@@ -57,20 +58,25 @@ w.unemp <- 1 - (w.pop + w.gdp + w.asyl)
 
 aha <- get.ref.table(input.list)
 aha$good <- aha$share.accepted >= aha$share.quota
-df <- merge(aha, get.index.data(input.list, year.range = 2013), by = c("country"))
+df <- merge(aha, get.index.data(input.list, year.range = 2013), 
+    by = c("country"))
 
 df$gdpper <- df$gdp.per.capita
 df$jitper <- jitter(df$gdpper)
 df$jitasyl <- jitter(df$unemp)
-#df$good <- df$quota.accept>=df$quota.key
-ggplot(df, aes(x = gdpper, y = population)) +
-  geom_point(data = df, aes(x = jitper, y = population, size = share.accepted, colour = good), alpha = .4)+
-  geom_text(data=df, aes(x=jitper, y=population, label = country)) + 
-  scale_size(range = c(1,30)) + xlim(15000, 50000)  + guides(colour=FALSE)+ guides(size=FALSE) + 
-  scale_y_log10(breaks = c(1,10,100)*1000000, limits = c(400000, 100000000))
-  #scale_y_discrete(breaks =1:3 , labels=c("Low","High"," "), limits = c(1, 2))+
-  #scale_x_discrete(breaks =1:4 , labels=c("Location A","Location B","Location C","Location D"), limits = c(1,2,3,4))+ 
-  #+ theme_bw() #
+# df$good <- df$quota.accept>=df$quota.key
+ggplot(df, aes(x = gdpper, y = population)) + geom_point(data = df, 
+    aes(x = jitper, y = population, size = share.accepted, colour = good), 
+    alpha = 0.4) + geom_text(data = df, aes(x = jitper, y = population, 
+    label = country)) + scale_size(range = c(1, 30)) + xlim(15000, 
+    50000) + guides(colour = FALSE) + guides(size = FALSE) + 
+    scale_y_log10(breaks = c(1, 10, 100) * 1e+06, limits = c(4e+05, 
+        1e+08))
+# scale_y_discrete(breaks =1:3 , labels=c('Low','High',' '),
+# limits = c(1, 2))+ scale_x_discrete(breaks =1:4 ,
+# labels=c('Location A','Location B','Location C','Location
+# D'), limits = c(1,2,3,4))+
+#+ theme_bw() #
 
 
 # Example
@@ -97,7 +103,7 @@ zz <- textConnection("Row PowerSource ProductSegment Price Model ManufacturingLo
                      19 High SegmentD High ModS LocationC 95000
                      20 Low SegmentE Low ModT LocationD 4000
                      ")
-df2 <- read.table(zz, header= TRUE)
+df2 <- read.table(zz, header = TRUE)
 close(zz)
 df2
 
@@ -106,16 +112,19 @@ df2
 df2$JitCoOr <- jitter(as.numeric(factor(df2$ManufacturingLocation)))
 df2$JitCoOrPow <- jitter(as.numeric(factor(df2$PowerSource)))
 
-ggplot(df2, aes(x = ManufacturingLocation, y = PowerSource)) +
-  geom_point(data=df2,aes(x=JitCoOr, y=JitCoOrPow,size = Quantity, colour = Price), alpha=.5)+
-  geom_text(data=df2,aes(x=JitCoOr, y=JitCoOrPow,label=Model)) + 
-  scale_size(range = c(1,50)) +
-  scale_y_discrete(breaks =1:3 , labels=c("Low","High"," "), limits = c(1, 2))+
-  scale_x_discrete(breaks =1:4 , labels=c("Location A","Location B","Location C","Location D"), limits = c(1,2,3,4))+ 
-  theme_bw()
+ggplot(df2, aes(x = ManufacturingLocation, y = PowerSource)) + 
+    geom_point(data = df2, aes(x = JitCoOr, y = JitCoOrPow, size = Quantity, 
+        colour = Price), alpha = 0.5) + geom_text(data = df2, 
+    aes(x = JitCoOr, y = JitCoOrPow, label = Model)) + scale_size(range = c(1, 
+    50)) + scale_y_discrete(breaks = 1:3, labels = c("Low", "High", 
+    " "), limits = c(1, 2)) + scale_x_discrete(breaks = 1:4, 
+    labels = c("Location A", "Location B", "Location C", "Location D"), 
+    limits = c(1, 2, 3, 4)) + theme_bw()
 
 
-aha <- merge(input.list$total, input.list$accept, by = c("year", "country"))
+aha <- merge(input.list$total, input.list$accept, by = c("year", 
+    "country"))
 aha2 <- cbind(aha$accept, aha$gdp, aha$pop, aha$unemp, aha$unhcr.asyleffect)
 plot(aha2)
-lm.aha <- lm(accept ~ gdp.per.capita + unemp + unhcr.asyleffect, data = aha)
+lm.aha <- lm(accept ~ gdp.per.capita + unemp + unhcr.asyleffect, 
+    data = aha)

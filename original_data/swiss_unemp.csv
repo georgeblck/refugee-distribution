@@ -1,11 +1,12 @@
-GEO, TIME, UNEMPLOYMENT
-Switzerland,2006,3.2
-Switzerland,2007,2.9
-Switzerland,2008,2.3
-Switzerland,2009,2.8
-Switzerland,2010,2.6
-Switzerland,2011,2.3
-Switzerland,2012,2.4
-Switzerland,2013,2.5
-Switzerland,2014,2.4
-Switzerland,2015,2.4
+GEO, TIME, UNEMPLOYMENT,old
+Switzerland,2006,4.58410552729175,3.2
+Switzerland,2007,4.16080418316948,2.9
+Switzerland,2008,3.89015342316608,2.3
+Switzerland,2009,4.75297631247942,2.8
+Switzerland,2010,4.8079568368,2.6
+Switzerland,2011,4.4093810419,2.3
+Switzerland,2012,4.4913991844,2.4
+Switzerland,2013,4.7467318353,2.5
+Switzerland,2014,4.8259365335,2.4
+Switzerland,2015,4.8007075235,2.4
+Switzerland,2016,4.91786572,

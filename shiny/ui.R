@@ -35,7 +35,7 @@ shinyUI(pageWithSidebar(
       div(id = "only.results.options",
           # Choose the time range 
           sliderInput("year.range", label = strong("Distribute Asylum Applications from the years"), 
-                    min = 2010, max = 2016, value = c(2014, 2015), step = 1, 
+                    min = 2010, max = 2017, value = c(2014, 2017), step = 1, 
                     sep = "", ticks = FALSE),
           # Nested Hidden Block 1.1
           # Only show when on plot output
@@ -79,7 +79,7 @@ shinyUI(pageWithSidebar(
       # Chooose the base year of the key
       div(id = "only.base.options",
           sliderInput("base.year.range", label = h4("Choose the base year of the quota"), min = 2009, 
-                      max = 2015, value = 2015, step = 1, sep ="", ticks = FALSE)
+                      max = 2016, value = 2016, step = 1, sep ="", ticks = FALSE)
       )
     ),
     
