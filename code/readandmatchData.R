@@ -3,73 +3,68 @@
 # Read, correct and match all the data
 #---------------
 ######################### 
-
+options(stringsAsFactors = FALSE)
 #----------------------------------
 # Read GDP ('Gross domestic product at market prices')
-# 2006-2015 annual values
+# 1975-2018 annual values
 #---------------------------------
-gdp.raw <- read.eurostat("original_data/nama_10_gdp_1_Data.csv", 
-    name = "GDP")
-gdp.aha <- split(gdp.raw, gdp.raw$UNIT)
-# Choice!!: 'Current prices, million euro' or 'Current
-# prices, million Purchasing Power Standards'
-gdp <- subset(gdp.raw, UNIT == "Current prices, million euro", 
-    select = c("TIME", "GEO", "GDP"))
-# Read, convert and append the Liechtenstein GDP data 1st
-# Note: There is not data for the Liechtenstein GDP in 2014 &
-# 2015 These values will be replace by the GDP from 2013 2nd
-# Note: Liechtenstein GDP is in CHF --> Average exchange
-# rates from the respective years are used to transform the
-# GDP
-liech.gdp <- cbind("Liechtenstein", read.table("original_data/liechtenstein_gdp.csv", 
-    header = TRUE, skip = 2, quote = "\"", sep = ";", col.names = c("TIME", 
-        "GDP")))
-# Insert missing GDP values in 2014 & 2015
-liech.gdp <- rbind(liech.gdp, liech.gdp[rep(8, 2), ])
-liech.gdp[9:10, 2] <- c(2014, 2015)
-colnames(liech.gdp)[1] <- "GEO"
+gdp <- get_eurostat("nama_10_gdp", type = "label", time_format = "num",
+                        cache_dir = "eurostat_cache", stringsAsFactors = FALSE) %>%
+  filter(unit == "Current prices, million euro", na_item == "Gross domestic product at market prices") %>%
+  select(time, geo, values) %>% rename(gdp = values) %>% mutate(geo = gsub("^Germany.*", "Germany", geo ))
+
+liech.gdp <- read.table("original_data/liechtenstein_gdp.csv", 
+    header = TRUE, skip = 2, quote = "\"", sep = ";", col.names = c("time", 
+        "gdp")) %>% mutate(geo = "Liechtenstein")
 # Use exchange rates to transform the CHF GDP
-liech.gdp$GDP <- liech.gdp$GDP/read.eurostat("original_data/ert_bil_eur_a_1_Data.csv", 
-    name = "Value")$Value
-gdp <- rbind(gdp, liech.gdp)
+liech.gdp <- get_eurostat("ert_bil_eur_a", type = "label", time_format = "num",
+                            cache_dir = "eurostat_cache", stringsAsFactors = FALSE)  %>% 
+  filter(currency == "Swiss franc", statinfo == "Average") %>% arrange(time) %>% 
+  select(time,values) %>% right_join(liech.gdp, by = "time") %>% mutate(gdp = gdp/values) %>% select(-values)
+gdp <- rbind(gdp, liech.gdp) %>% arrange(geo,time)
+rm(liech.gdp)
 
 #----------------------------------------
-# Read Population 1991-2015 annual values
+# Read Population annual values
 #----------------------------------------
-pop.raw <- read.eurostat("original_data/demo_pjan_1_Data.csv", 
-    name = "POP")
-pop <- pop.raw[which(pop.raw$TIME >= 1991), c(1, 2, 6)] # watch out with indexing!
+pop <- get_eurostat("demo_pjan", type = "label", time_format = "num",
+                        cache_dir = "eurostat_cache", stringsAsFactors = FALSE) %>%
+  filter(age == "Total", sex == "Total") %>%
+  select(time, geo, values) %>% rename(pop = values) %>% arrange(geo,time) %>%
+  mutate(geo = gsub("^Germany.*", "Germany", geo ))
+
 
 #---------------------------------
 # Unemployment 2006-2015 annual
 #-------------------------------
-unemp.raw <- read.eurostat("original_data/une_rt_a_1_Data.csv", 
-    name = "UNEMPLOYMENT")
-unemp <- unemp.raw[, c(1, 2, 6)]
+unemp <- get_eurostat("une_rt_a", type = "label", time_format = "num",
+                      cache_dir = "eurostat_cache", stringsAsFactors = FALSE) %>%
+  filter(age == "Total", sex == "Total", unit == "Percentage of active population") %>%
+  select(time, geo, values) %>% rename(unemp = values)%>% arrange(geo,time) %>% mutate(geo = gsub("^Germany.*", "Germany", geo ))
+
+
 # Append the Swiss data
 unemp <- rbind(unemp, read.table("original_data/swiss_unemp.csv", 
-    sep = ",", dec = ",", header = TRUE)[, c(2, 1, 3)])
+    sep = ",", dec = ".", header = TRUE)[, c(2, 1, 3)])
 # Get the Liechtenstein data and append it
-liech.unemp <- cbind("Liechtenstein", read.table("original_data/liechtenstein_unemp.csv", 
-    header = TRUE, skip = 2, quote = "\"", sep = ",", col.names = c("TIME", 
-        "sex", "origin", "UNEMPLOYMENT"))[, c(1, 4)])
-colnames(liech.unemp)[1] <- "GEO"
-unemp <- rbind(unemp, liech.unemp)
-unemp$UNEMPLOYMENT <- as.numeric(as.character(unemp$UNEMPLOYMENT))
+liech.unemp <- read.table("original_data/liechtenstein_unemp.csv", header = TRUE,
+                          dec = ".", sep = ";", skip = 2) %>% mutate(geo = "Liechtenstein") %>%
+  rename(time = Jahr, unemp = Durchschnitt) %>% select(-c(Geschlecht, Heimat)) 
+unemp <- rbind(unemp, liech.unemp) %>% arrange(geo, time)
+rm(liech.unemp)
+
 
 #------------------------------------
 # Read age index data 2006-2015 annual (not used atm)
 #------------------------------------
-age.raw <- read.eurostat("original_data/demo_pjanind_1_Data.csv", 
-    name = "OLDAGE")
-age.raw <- lapply(split(age.raw, age.raw$INDIC_DE, drop = TRUE), 
-    function(x) x[, c(1, 2, 4)])
-# Choice
-age <- age.raw$`Old dependency ratio 1st variant (population 65 and over to population 15 to64 years)`
+age <- get_eurostat("demo_pjanind", type = "label", time_format = "num",
+                    cache_dir = "eurostat_cache", stringsAsFactors = FALSE) %>%
+  filter(indic_de == "Old dependency ratio 1st variant (population 65 and over to population 15 to64 years)") %>%
+  select(time, geo, values) %>% rename(oldage = values) %>% mutate(geo = gsub("^Germany.*", "Germany", geo ))
 
 #------------------------------------
 # Read data on annual asylum applications (Eurostat)
-# 2006-2015
+# 1985-2019
 #------------------------------------
 if (FALSE) {
     # Abweichung von ca 400 vom monatlichen. Monatlicher geht bis
@@ -81,73 +76,57 @@ if (FALSE) {
     asyl.eu <- cbind(asyl.eu.raw[[2]], asyl.eu.raw[[1]]$applic)
     colnames(asyl.eu)[3:4] <- c("First", "All")
 }
-# Get the monthly data
-asyl.eu.raw <- read.eurostat("original_data/migr_asyappctzm_1_Data.csv", 
-    name = "applic")
-asyl.eu.raw <- split(asyl.eu.raw, asyl.eu.raw$ASYL_APP, drop = FALSE)
-asyl.eu.raw <- lapply(asyl.eu.raw, function(x) {
-    x <- x[, c(1, 2, 8)]
-    x$TIME <- as.numeric(substr(x$TIME, 1, 4))
-    return(aggregate(applic ~ GEO + TIME, x, sum, drop = FALSE))
-})
-asyl.eu <- merge(asyl.eu.raw[[2]], asyl.eu.raw[[1]], all = TRUE, 
-    by = c("GEO", "TIME"))
-colnames(asyl.eu)[3:4] <- c("First", "All")
+# Get recent data on first and all asylum applications
+asyl.eu <- get_eurostat("migr_asyappctzm", type = "label", time_format = "num",
+                        cache_dir = "eurostat_cache", stringsAsFactors = FALSE) %>%
+  filter(sex == "Total", age == "Total", citizen == "Total") %>% mutate(time = floor(time)) %>% group_by(geo, time, asyl_app) %>% 
+  summarise_at(vars(values), sum, na.rm = TRUE) %>% ungroup() %>% complete(geo,time,asyl_app) %>% spread(asyl_app, values) %>%
+  rename(first = "Asylum applicant", all = "First time applicant") 
 
-# Get old data on asylum applications (Eurostat) Note: Data
-# on First Asylum Applications is monthly. The other is
-# annual
-asyl.eu.old.raw <- read.eurostat("original_data/migr_asyctzm_1_Data.csv", 
-    name = "First")
-asyl.eu.old.raw$TIME <- as.numeric(substr(asyl.eu.old.raw$TIME, 
-    1, 4))
-asyl.eu.old.raw <- aggregate(First ~ TIME + GEO, data = asyl.eu.old.raw, 
-    FUN = sum, drop = FALSE)
-asyl.eu.old.raw <- merge(asyl.eu.old.raw, read.eurostat("original_data/migr_asyctz_1_Data.csv", 
-    name = "All")[, c(1, 2, 5)], by = c("GEO", "TIME"))
+# Get monthly old data on first asylum application
+asyl.eu.old <- get_eurostat("migr_asyctzm", type = "label", time_format = "num",
+                        cache_dir = "eurostat_cache", stringsAsFactors = FALSE) %>%
+  filter(citizen == "Total") %>% mutate(time = floor(time)) %>% group_by(geo, time) %>%
+  summarise_at(vars(values), sum, na.rm = TRUE) %>% ungroup() %>% complete(geo, time) %>%
+  rename(first = values)
+# Get old yearly data on generall asylum applications
+asyl.eu.old <- get_eurostat("migr_asyctz", type = "label", time_format = "num",
+                            cache_dir = "eurostat_cache", stringsAsFactors = FALSE) %>%
+  filter(citizen == "Total") %>% group_by(geo, time) %>%
+  summarise_at(vars(values), sum, na.rm = TRUE) %>% ungroup() %>% complete(geo, time) %>% 
+  rename(all = values) %>% full_join(asyl.eu.old, by = c("geo", "time"))
+
+asyl.eu <- rbind(asyl.eu, asyl.eu.old) %>% filter(geo != "Total") %>% 
+  filter(!grepl("^European", geo)) %>% mutate(geo = gsub("^Germany.*", "Germany", geo )) %>% arrange(geo,time)
+
 
 #------------------------------------
 # Read data on monthly asyl Seekers (UNHCR) 1999-2016
 #------------------------------------
-asyl.unhcr.raw <- rbind.data.frame(read.table("original_data/unhcr_monthly.csv", 
-    sep = ",", header = TRUE, skip = 3, na.strings = "*", stringsAsFactors = FALSE), 
-    read.table("original_data/unhcr_monthly_2016_08.csv", sep = ",", 
-        header = TRUE, skip = 3, na.strings = "*", stringsAsFactors = FALSE))
-colnames(asyl.unhcr.raw)[c(1, 3, 5)] <- c("GEO", "TIME", "unhcr")
-asyl.unhcr.raw$GEO <- gsub("^Czech.*$", "Czech Republic", asyl.unhcr.raw$GEO)
-asyl.unhcr.raw$GEO <- gsub("^United Ki.*$", "United Kingdom", 
-    asyl.unhcr.raw$GEO)
+asyl.unhcr <- read.table("original_data/unhcr_monthly.csv", 
+    sep = ",", header = TRUE, skip = 3, na.strings = "*", stringsAsFactors = FALSE) 
+colnames(asyl.unhcr)[c(1, 3, 5)] <- c("geo", "time", "unhcr")
+asyl.unhcr <- asyl.unhcr %>% select(c(geo,time,unhcr))%>% mutate(geo = gsub("^Czech.*$", "Czechia", geo)) %>% 
+  mutate(geo = gsub("^United Ki.*$", "United Kingdom", 
+                    geo)) %>% 
+  filter(!grepl("Korea|Macedonia|Serbia|Turkey|USA", geo)) %>% 
+  group_by(geo, time) %>% summarise_at(vars(unhcr), sum, na.rm = TRUE) %>% ungroup() %>% arrange(geo, time)
 
-# Turn/collapse/aggregate monthly into annual data
-asyl.unhcr <- aggregate(unhcr ~ GEO + TIME, asyl.unhcr.raw, sum, 
-    drop = FALSE)
-attr(asyl.unhcr, "out.attrs") <- NULL
-
-# Check if it matches aha <-
-# cbind(sort(unique(asyl.unhcr$GEO)),
-# sort(unique(as.character(asyl.eu$GEO))))
-# sum(!is.na(charmatch(sort(unique(asyl.unhcr$GEO)),
-# sort(unique(as.character(asyl.eu$GEO)))))) # Should be 32
-
-asyl.eu.old <- droplevels(merge(asyl.eu.old.raw, subset(asyl.unhcr, 
-    (TIME %in% unique(asyl.eu.old.raw$TIME)) & (GEO %in% unique(asyl.eu$GEO))), 
-    by = c("GEO", "TIME"), all.y = TRUE)[, 1:4])
-asyl.eu <- rbind(asyl.eu, asyl.eu.old)
-asyl.eu <- asyl.eu[order(asyl.eu$GEO, asyl.eu$TIME), ]
+asyl <- left_join(asyl.eu, asyl.unhcr, by = c("geo", "time"))
+#rm(asyl.eu,asyl.eu.old, asyl.unhcr)
+sum(abs(asyl$first-asyl$all), na.rm = TRUE)/1000000
+sum(abs(asyl$first-asyl$unhcr), na.rm = TRUE)/1000000
+sum(abs(asyl$all-asyl$unhcr), na.rm = TRUE)/1000000
 
 #----------------------------------
-# Read ACCEPTED asylum seekers Eurostat monthly 2008-2016Q1
+# Read ACCEPTED asylum seekers Eurostat monthly 2008-2019Q1
 #-------------------------------
-accept.raw <- read.eurostat("original_data/migr_asydcfstq_1_Data.csv", 
-    name = "Accepted")
-accept.raw$TIME <- as.numeric(substr(accept.raw$TIME, 1, 4))
-accept.raw <- aggregate(Accepted ~ TIME + GEO + DECISION, data = accept.raw, 
-    FUN = sum, drop = FALSE)
-accept.raw <- lapply(split(accept.raw, accept.raw$DECISION, drop = TRUE), 
-    function(x) x[, c(1, 2, 4)])
-# Choice!
-accept <- accept.raw$`Total positive decisions`
-colnames(accept) <- c("year", "country", "accept")
+accept <- get_eurostat("migr_asydcfstq", type = "label", time_format = "num",
+                            cache_dir = "eurostat_cache", stringsAsFactors = FALSE) %>%
+  filter(citizen == "Total", sex == "Total", age == "Total", decision == "Total positive decisions") %>% 
+  mutate(time = floor(time)) %>% group_by(geo, time) %>%
+  summarise_at(vars(values), sum, na.rm = TRUE) %>% ungroup() %>% complete(geo, time) %>%
+  rename(accept = values)
 
 # Non member states
 non.eu <- c("Iceland", "Norway", "Switzerland", "Liechtenstein")
@@ -155,9 +134,9 @@ non.dublin <- c("Denmark", "Ireland", "United Kingdom")
 
 ########################### Create asylum applications per 1 mil Pop.  Average over the
 ########################### last 5 years For all 3 Variables (EUFIRSt, EUALL, UNHCR)
-first.eff <- calc.asyleffect(asyl.eu, pop, name.app = "First")
-all.eff <- calc.asyleffect(asyl.eu, pop, name.app = "All")
-unhcr.eff <- calc.asyleffect(asyl.unhcr, pop, name.app = "unhcr")
+first.eff <- calc.asyleffect(asyl, pop, name.app = "first")
+all.eff <- calc.asyleffect(asyl, pop, name.app = "all")
+unhcr.eff <- calc.asyleffect(asyl, pop, name.app = "unhcr")
 
 
 
