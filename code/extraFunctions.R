@@ -328,7 +328,7 @@ rollAvg <- function(x, width = 5) {
 # Function to calculate the above mentioned asyleffect
 calc.asyleffect <- function(asyl, population, name.app = "applic", 
     name.pop = "pop", name.geo = "geo", name.time = "time") {
-    merged <- left_join(asyl, population, by = c("geo", "time"))
+    merged <- merge(asyl, population, by = c("geo", "time"))
     pure.asyl <- merged[, c(name.app)]/round(merged[, c(name.pop)]/1e+06, 
         2)
     asyleffect <- unlist(by(pure.asyl, merged[, c(name.geo)], 

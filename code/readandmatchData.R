@@ -1,18 +1,11 @@
-######################### 
-#----------------
-# Read, correct and match all the data
-#---------------
-######################### 
 options(stringsAsFactors = FALSE)
-#----------------------------------
-# Read GDP ('Gross domestic product at market prices')
-# 1975-2018 annual values
-#---------------------------------
+
+# Read GDP
 gdp <- get_eurostat("nama_10_gdp", type = "label", time_format = "num",
                         cache_dir = "eurostat_cache", stringsAsFactors = FALSE) %>%
   filter(unit == "Current prices, million euro", na_item == "Gross domestic product at market prices") %>%
   select(time, geo, values) %>% rename(gdp = values) %>% mutate(geo = gsub("^Germany.*", "Germany", geo ))
-
+# Read Liechtenstein GDP 
 liech.gdp <- read.table("original_data/liechtenstein_gdp.csv", 
     header = TRUE, skip = 2, quote = "\"", sep = ";", col.names = c("time", 
         "gdp")) %>% mutate(geo = "Liechtenstein")
@@ -22,11 +15,8 @@ liech.gdp <- get_eurostat("ert_bil_eur_a", type = "label", time_format = "num",
   filter(currency == "Swiss franc", statinfo == "Average") %>% arrange(time) %>% 
   select(time,values) %>% right_join(liech.gdp, by = "time") %>% mutate(gdp = gdp/values) %>% select(-values)
 gdp <- rbind(gdp, liech.gdp) %>% arrange(geo,time)
-rm(liech.gdp)
 
-#----------------------------------------
-# Read Population annual values
-#----------------------------------------
+# Read Pop
 pop <- get_eurostat("demo_pjan", type = "label", time_format = "num",
                         cache_dir = "eurostat_cache", stringsAsFactors = FALSE) %>%
   filter(age == "Total", sex == "Total") %>%
@@ -34,29 +24,21 @@ pop <- get_eurostat("demo_pjan", type = "label", time_format = "num",
   mutate(geo = gsub("^Germany.*", "Germany", geo ))
 
 
-#---------------------------------
-# Unemployment 2006-2015 annual
-#-------------------------------
+# Read Unemp
 unemp <- get_eurostat("une_rt_a", type = "label", time_format = "num",
                       cache_dir = "eurostat_cache", stringsAsFactors = FALSE) %>%
   filter(age == "Total", sex == "Total", unit == "Percentage of active population") %>%
   select(time, geo, values) %>% rename(unemp = values)%>% arrange(geo,time) %>% mutate(geo = gsub("^Germany.*", "Germany", geo ))
-
-
-# Append the Swiss data
+# Append the Swiss and Liech Data
 unemp <- rbind(unemp, read.table("original_data/swiss_unemp.csv", 
     sep = ",", dec = ".", header = TRUE)[, c(2, 1, 3)])
-# Get the Liechtenstein data and append it
 liech.unemp <- read.table("original_data/liechtenstein_unemp.csv", header = TRUE,
                           dec = ".", sep = ";", skip = 2) %>% mutate(geo = "Liechtenstein") %>%
   rename(time = Jahr, unemp = Durchschnitt) %>% select(-c(Geschlecht, Heimat)) 
 unemp <- rbind(unemp, liech.unemp) %>% arrange(geo, time)
-rm(liech.unemp)
 
 
-#------------------------------------
-# Read age index data 2006-2015 annual (not used atm)
-#------------------------------------
+# Read Age Index (not used atm)
 age <- get_eurostat("demo_pjanind", type = "label", time_format = "num",
                     cache_dir = "eurostat_cache", stringsAsFactors = FALSE) %>%
   filter(indic_de == "Old dependency ratio 1st variant (population 65 and over to population 15 to64 years)") %>%
@@ -64,7 +46,6 @@ age <- get_eurostat("demo_pjanind", type = "label", time_format = "num",
 
 #------------------------------------
 # Read data on annual asylum applications (Eurostat)
-# 1985-2019
 #------------------------------------
 if (FALSE) {
     # Abweichung von ca 400 vom monatlichen. Monatlicher geht bis
@@ -113,49 +94,38 @@ asyl.unhcr <- asyl.unhcr %>% select(c(geo,time,unhcr))%>% mutate(geo = gsub("^Cz
   group_by(geo, time) %>% summarise_at(vars(unhcr), sum, na.rm = TRUE) %>% ungroup() %>% arrange(geo, time)
 
 asyl <- left_join(asyl.eu, asyl.unhcr, by = c("geo", "time"))
-#rm(asyl.eu,asyl.eu.old, asyl.unhcr)
+
 sum(abs(asyl$first-asyl$all), na.rm = TRUE)/1000000
 sum(abs(asyl$first-asyl$unhcr), na.rm = TRUE)/1000000
 sum(abs(asyl$all-asyl$unhcr), na.rm = TRUE)/1000000
 
-#----------------------------------
+
 # Read ACCEPTED asylum seekers Eurostat monthly 2008-2019Q1
-#-------------------------------
 accept <- get_eurostat("migr_asydcfstq", type = "label", time_format = "num",
                             cache_dir = "eurostat_cache", stringsAsFactors = FALSE) %>%
   filter(citizen == "Total", sex == "Total", age == "Total", decision == "Total positive decisions") %>% 
   mutate(time = floor(time)) %>% group_by(geo, time) %>%
   summarise_at(vars(values), sum, na.rm = TRUE) %>% ungroup() %>% complete(geo, time) %>%
-  rename(accept = values)
+  rename(accept = values) %>% mutate(geo = gsub("^Germany.*", "Germany", geo )) %>% arrange(geo,time)
 
-# Non member states
-non.eu <- c("Iceland", "Norway", "Switzerland", "Liechtenstein")
-non.dublin <- c("Denmark", "Ireland", "United Kingdom")
-
-########################### Create asylum applications per 1 mil Pop.  Average over the
-########################### last 5 years For all 3 Variables (EUFIRSt, EUALL, UNHCR)
+# Calculate the asyl effect for later
 first.eff <- calc.asyleffect(asyl, pop, name.app = "first")
 all.eff <- calc.asyleffect(asyl, pop, name.app = "all")
 unhcr.eff <- calc.asyleffect(asyl, pop, name.app = "unhcr")
 
 
-
-#-----------------------------------
-# Match the data sets
-#------------------------------------
-
-
+# Merge all data sets
 # Merge the data for the Indices!  GDP und Unemployment
-total <- merge(gdp, unemp, by = c("TIME", "GEO"))
+total <- merge(gdp, unemp, by = c("time", "geo"))
 
 # + Population
-total <- merge(total, pop, by = c("TIME", "GEO"))
-total$gdp.per.capita <- (total$GDP * 1e+06)/total$POP
+total <- merge(total, pop, by = c("time", "geo"))
+total$gdp.per.capita <- (total$gdp * 1e+06)/total$pop
 
 # + previously calculated asyleffects
-total <- merge(total, first.eff, by = c("GEO", "TIME"))
-total <- merge(total, all.eff, by = c("GEO", "TIME"))
-total <- merge(total, unhcr.eff, by = c("GEO", "TIME"))
+total <- merge(total, first.eff, by = c("geo", "time"))
+total <- merge(total, all.eff, by = c("geo", "time"))
+total <- merge(total, unhcr.eff, by = c("geo", "time"))
 
 # Make list of different asyl application data-sets
 asyl.ls <- lapply(list(first = asyl.eu[, 1:3], all = asyl.eu[, 
@@ -168,8 +138,11 @@ asyl.ls <- lapply(list(first = asyl.eu[, 1:3], all = asyl.eu[,
 colnames(total) <- tolower(colnames(total))
 colnames(total)[1:4] <- c("country", "year", "gdp", "unemp")
 
+
+# Non member states
+non.eu <- c("Iceland", "Norway", "Switzerland", "Liechtenstein")
+non.dublin <- c("Denmark", "Ireland", "United Kingdom")
+
+
 # Remove stuff
-rm(age, asyl.eu, asyl.eu.old, asyl.unhcr, asyl.unhcr.raw, asyl.eu.raw, 
-    gdp, gdp.raw, accept.raw, age.raw, gdp.aha, asyl.eu.old.raw, 
-    first.eff, all.eff, unhcr.eff, liech.gdp, liech.unemp, unemp, 
-    unemp.raw, pop, pop.raw, read.eurostat, checkit)
+
