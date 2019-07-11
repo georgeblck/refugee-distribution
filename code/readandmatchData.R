@@ -1,4 +1,9 @@
 options(stringsAsFactors = FALSE)
+options(scipen=999)
+
+library(tidyverse)
+library(eurostat)
+library(zoo)
 
 # Read GDP
 gdp <- get_eurostat("nama_10_gdp", type = "label", time_format = "num",
@@ -8,7 +13,7 @@ gdp <- get_eurostat("nama_10_gdp", type = "label", time_format = "num",
 # Read Liechtenstein GDP 
 liech.gdp <- read.table("original_data/liechtenstein_gdp.csv", 
     header = TRUE, skip = 2, quote = "\"", sep = ";", col.names = c("time", 
-        "gdp")) %>% mutate(geo = "Liechtenstein")
+        "gdp")) %>% mutate(geo = "Liechtenstein") %>% filter(time < 2013)
 # Use exchange rates to transform the CHF GDP
 liech.gdp <- get_eurostat("ert_bil_eur_a", type = "label", time_format = "num",
                             cache_dir = "eurostat_cache", stringsAsFactors = FALSE)  %>% 
@@ -62,7 +67,7 @@ asyl.eu <- get_eurostat("migr_asyappctzm", type = "label", time_format = "num",
                         cache_dir = "eurostat_cache", stringsAsFactors = FALSE) %>%
   filter(sex == "Total", age == "Total", citizen == "Total") %>% mutate(time = floor(time)) %>% group_by(geo, time, asyl_app) %>% 
   summarise_at(vars(values), sum, na.rm = TRUE) %>% ungroup() %>% complete(geo,time,asyl_app) %>% spread(asyl_app, values) %>%
-  rename(first = "Asylum applicant", all = "First time applicant") 
+  rename(all = "Asylum applicant", first = "First time applicant") 
 
 # Get monthly old data on first asylum application
 asyl.eu.old <- get_eurostat("migr_asyctzm", type = "label", time_format = "num",
@@ -108,24 +113,24 @@ accept <- get_eurostat("migr_asydcfstq", type = "label", time_format = "num",
   summarise_at(vars(values), sum, na.rm = TRUE) %>% ungroup() %>% complete(geo, time) %>%
   rename(accept = values) %>% mutate(geo = gsub("^Germany.*", "Germany", geo )) %>% arrange(geo,time)
 
-# Calculate the asyl effect for later
+#### Merge all ####
+alldat <- asyl %>% left_join(gdp, by = c("time", "geo")) %>%
+  left_join(unemp, by = c("time", "geo")) %>%
+  left_join(pop, by = c("time", "geo")) %>% mutate(gdpPC = (gdp * 1e+06) / pop,
+                                                   popr = round(pop/1e+06,2)) %>%
+  left_join(accept, by = c("time", "geo")) %>%
+  mutate(firstr = first/popr, allr = all/popr, unhcrr = unhcr/popr) %>%
+  group_by(geo) %>% mutate(firstf = lag(rollapply(firstr, 5, mean, fill = NA, align = "right", partial = TRUE, na.rm = TRUE),1),
+                           allf = lag(rollapply(allr, 5, mean, fill = NA, align = "right", partial = TRUE, na.rm = TRUE),1),
+                           unhcrf = lag(rollapply(unhcrr, 5, mean, fill = NA, align = "right", partial = TRUE, na.rm = TRUE),1)) %>% 
+  ungroup()
+
+
+
+
 first.eff <- calc.asyleffect(asyl, pop, name.app = "first")
 all.eff <- calc.asyleffect(asyl, pop, name.app = "all")
 unhcr.eff <- calc.asyleffect(asyl, pop, name.app = "unhcr")
-
-
-# Merge all data sets
-# Merge the data for the Indices!  GDP und Unemployment
-total <- merge(gdp, unemp, by = c("time", "geo"))
-
-# + Population
-total <- merge(total, pop, by = c("time", "geo"))
-total$gdp.per.capita <- (total$gdp * 1e+06)/total$pop
-
-# + previously calculated asyleffects
-total <- merge(total, first.eff, by = c("geo", "time"))
-total <- merge(total, all.eff, by = c("geo", "time"))
-total <- merge(total, unhcr.eff, by = c("geo", "time"))
 
 # Make list of different asyl application data-sets
 asyl.ls <- lapply(list(first = asyl.eu[, 1:3], all = asyl.eu[, 
@@ -143,6 +148,4 @@ colnames(total)[1:4] <- c("country", "year", "gdp", "unemp")
 non.eu <- c("Iceland", "Norway", "Switzerland", "Liechtenstein")
 non.dublin <- c("Denmark", "Ireland", "United Kingdom")
 
-
-# Remove stuff
 

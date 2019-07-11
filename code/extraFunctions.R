@@ -350,9 +350,6 @@ read.eurostat <- function(file, name) {
     return(temp)
 }
 
-# Small helper function
-checkit <- function(x) table(x$GEO, x$TIME)
-
 # Function to plot multiple ggplots (not used)
 multiplot <- function(..., plotlist = NULL, file, cols = 1, layout = NULL) {
     library(grid)
