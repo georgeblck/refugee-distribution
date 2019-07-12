@@ -9,6 +9,7 @@ library(scales)
 library(shinyjs)
 library(markdown)
 require(grid)
+library(tidyverse)
 
 # For AWS
 #sudo su - -c "R -e \"install.packages(c('reshape','ggplot2', 'gridExtra', 

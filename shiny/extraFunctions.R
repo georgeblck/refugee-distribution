@@ -1,3 +1,11 @@
+newdat <- FALSE
+if(newdat){
+  source("readandmatchData.R")
+  save.image(file = "data.RData")
+} else {
+  load("data.RData")
+}
+
 get.ref.numbers <- function(input.list, year.range = c(2014, 
     2015), which.source = "unhcr", countries = c("1", "2")) {
     # Extract data
