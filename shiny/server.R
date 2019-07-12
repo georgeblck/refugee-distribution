@@ -3,7 +3,15 @@
 # plotting/tables etc.
 
 source("extraFunctions.R")
-source("readandmatchData.R")
+newdat <- FALSE
+if(newdat){
+  source("readandmatchData.R")
+  save.image(file = "data.RData")
+} else {
+  load("data.RData")
+}
+
+
 input.list <- list(total = total, asyl = asyl.ls, accept = accept)
 
 

@@ -148,3 +148,4 @@ non.eu <- c("Iceland", "Norway", "Switzerland", "Liechtenstein")
 non.dublin <- c("Denmark", "Ireland", "United Kingdom")
 
 rm(age, alldat, asyl, asyl.eu, asyl.eu.old, asyl.unhcr, gdp, liech.gdp, liech.unemp, pop, unemp)
+

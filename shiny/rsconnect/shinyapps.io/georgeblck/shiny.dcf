@@ -1,0 +1,10 @@
+name: shiny
+title:
+username:
+account: georgeblck
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1027373
+bundleId: 2225676
+url: https://georgeblck.shinyapps.io/shiny/
+when: 1562939568.91999
