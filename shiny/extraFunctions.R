@@ -112,7 +112,7 @@ get.ref.table <- function(input.list, year.range = c(2014, 2015),
 }
 
 get.ref.plot <- function(input.list, year.range = c(2014, 2015), 
-    which.source = "unhcr", which.show = "ratio", countries = c("1", 
+    which.source = "first", which.show = "ratio", countries = c("1", 
         "2"), which.idx = "grech", w.pop = 0.4, w.gdp = 0.4, 
     w.asyl = 0.1, w.unemp = 0.1) {
     
@@ -128,7 +128,8 @@ get.ref.plot <- function(input.list, year.range = c(2014, 2015),
     total.year <- subset(total, year == which.year)
     
     # Get the (pre-calculated) Asyl-Effect from the chosen source
-    total.year$asyl <- total.year[, grep(which.source, colnames(total.year))]
+    total.year$asyl <- total.year[, grep(which.source, colnames(total.year))] %>%
+      pull(grep(which.source, colnames(total.year),value = TRUE))
     
     # Discard the non-chosen states
     if (!all.eu) 
@@ -266,6 +267,8 @@ get.index.data <- function(input.list, year.range = 2015, which.source = "unhcr"
 # keys that will be plotted
 calc.key <- function(x, weight.pop = 0.4, weight.gdp = 0.4, which = "grech", 
     cap = 0.3, weight.unemp = 0.1, weight.asyl = 0.1, number = 1e+06) {
+  cat("\n\n")
+  print(str(x))
     # Number of refugees to distribute
     if (which == "grech") {
         unemp.effect <- 1 + weight.unemp * (1 - (x$unemp/mean(x$unemp, 

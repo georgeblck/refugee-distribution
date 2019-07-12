@@ -35,7 +35,7 @@ shinyUI(pageWithSidebar(
       div(id = "only.results.options",
           # Choose the time range 
           sliderInput("year.range", label = strong("Distribute Asylum Applications from the years"), 
-                    min = 2010, max = 2017, value = c(2014, 2017), step = 1, 
+                    min = 2010, max = 2018, value = c(2014, 2017), step = 1, 
                     sep = "", ticks = FALSE),
           # Nested Hidden Block 1.1
           # Only show when on plot output
@@ -96,7 +96,7 @@ shinyUI(pageWithSidebar(
                 # Switch the source of (only!) the refugee data
                 selectInput("source", label = h4("Source of Refugee Data"), 
                             choices = c("UNHCR Data" = "unhcr", "Eurostat (only new Asylum Applications)" = "first", 
-                                           "Eurostat (including repeated Asylum Aplications)" = "all")), 
+                                           "Eurostat (including repeated Asylum Aplications)" = "all"), selected = "first"), 
                            # selected = ""),
                 # 2xNested Hidden Block 3.1.1
                 # Only NOT Show when on "Base-Var" tab

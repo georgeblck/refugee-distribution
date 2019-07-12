@@ -1,12 +1,10 @@
 # Read and match the data (GDP, POP, Unemployment, Asylum
 # applications, etc...)  Source the functions for
 # plotting/tables etc.
-shiny.wd <- getwd()
-setwd("..")
-source("code/extraFunctions.R")
-source("code/readandmatchData.R")
+
+source("extraFunctions.R")
+source("readandmatchData.R")
 input.list <- list(total = total, asyl = asyl.ls, accept = accept)
-setwd(shiny.wd)
 
 
 shinyServer(function(input, output, session) {
