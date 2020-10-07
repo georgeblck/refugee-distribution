@@ -1,10 +1,4 @@
-newdat <- FALSE
-if(newdat){
-  source("readandmatchData.R")
-  save.image(file = "data.RData")
-} else {
-  load("data.RData")
-}
+load("data2020.RData")
 
 get.ref.numbers <- function(input.list, year.range = c(2014, 
     2015), which.source = "unhcr", countries = c("1", "2")) {
@@ -63,10 +57,9 @@ get.ref.table <- function(input.list, year.range = c(2014, 2015),
     # Subset the year for index calculation
     which.year <- year.range[1] - 1
     total.year <- subset(total, year == which.year)
-    
     # Get the chosen asyl source
-    total.year$asyl <- total.year[, grep(which.source, colnames(total.year))]
-    
+    #total.year$asyl <- total.year[, grep(which.source, colnames(total.year))]
+    total.year$asyl <- total.year %>% select(all_of(paste0(which.source,".asyleffect"))) %>% pull()
     # Discard the non-EU states
     if (!all.eu) 
         total.year <- total.year[which(!total.year$country %in% 
@@ -74,7 +67,7 @@ get.ref.table <- function(input.list, year.range = c(2014, 2015),
     if (!all.dublin) 
         total.year <- total.year[which(!total.year$country %in% 
             non.dublin), ]
-    
+
     # Get the number of Asyl Applicants in the time range (for
     # the specified source!)
     applic.year <- subset(asyl.ls[[which.source]], (country %in% 
@@ -86,6 +79,7 @@ get.ref.table <- function(input.list, year.range = c(2014, 2015),
     res.applic <- cbind(num.applic, quota.applic)
     
     # Calculate the chosen index with all the pre-set values
+    print(str(total.year))
     res.key <- calc.key(total.year, which = which.idx, weight.pop = w.pop, 
         weight.gdp = w.gdp, weight.unemp = w.unemp, weight.asyl = w.asyl, 
         number = all.applic)
@@ -161,7 +155,7 @@ get.ref.plot <- function(input.list, year.range = c(2014, 2015),
     res.key <- calc.key(total.year, which = which.idx, weight.pop = w.pop, 
         weight.gdp = w.gdp, weight.unemp = w.unemp, weight.asyl = w.asyl, 
         number = all.applic)
-    
+
     # Get the number of accepted Asyl Applicants in the time
     # range (only Eurostat)
     accept.year <- subset(accept, (country %in% total.year$country) & 
@@ -315,6 +309,7 @@ calc.key <- function(x, weight.pop = 0.4, weight.gdp = 0.4, which = "grech",
     }
     quota.key <- round(quota.key, 4)
     temp <- cbind.data.frame(x$country, key, quota.key)
+    print(temp)
     temp$key <- round(temp$key)
     colnames(temp)[1] <- "country"
     return(temp)
@@ -435,3 +430,124 @@ cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442",
     "#0072B2", "#D55E00", "#CC79A7")
 cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", 
     "#0072B2", "#D55E00", "#CC79A7")
+
+tidy_eurostat <- function(dat, time_format = "date", select_time = NULL,
+                          stringsAsFactors = FALSE,
+                          keepFlags = FALSE) {
+  
+  # To avoid warnings
+  time <- values <- NULL
+  
+  # Separate codes to columns
+  cnames <- strsplit(colnames(dat)[1], split = "[\\,]")[[1]]
+  cnames1 <- cnames[-length(cnames)]  # for columns
+  cnames2 <- cnames[length(cnames)]   # for colnames
+  
+  # Separe variables from first column
+  dat <- tidyr::separate_(dat, col = colnames(dat)[1],
+                          into = cnames1,
+                          sep = ",", convert = FALSE)
+  
+  # Get variable from column names
+  
+  cnames2_quo <- as.name(cnames2)
+  dat <- tidyr::gather(dat, !!cnames2_quo, values, 
+                       -seq_along(cnames1),
+                       convert = FALSE)    
+  
+  # to save memory (and backward compatibility)
+  dat <- dplyr::filter(dat, !is.na(values))
+  print(head(dat))
+  ## separate flags into separate column
+  if(keepFlags == TRUE) {
+    dat$flags <- as.vector(
+      stringi::stri_extract_first_regex(dat$values, 
+                                        c("(^0n( [A-Za-z]+)*)|[A-Za-z]+")))
+  }
+  
+  # clean time and values
+  dat$time <- gsub("X", "", dat$TIME_PERIOD)
+  dat$values <- as.numeric(gsub("[^0-9.-]+", "", as.character(dat$values)))
+  
+  # variable columns
+  var_cols <- names(dat)[!(names(dat) %in% c("time", "values"))]
+  
+  # reorder to standard order
+  dat <- dat[c(var_cols, "time", "values")]
+  
+  # columns from var_cols are converted into factors
+  # avoid convert = FALSE since it converts T into TRUE instead of TOTAL
+  if (stringsAsFactors){
+    dat[,var_cols] <- lapply(dat[, var_cols, drop = FALSE],
+                             function(x) factor(x, levels = unique(x)))
+  }
+  
+  # For multiple time frequency
+  freqs <- available_freq(dat$time)
+  
+  if (!is.null(select_time)){
+    if (length(select_time) > 1) stop(
+      "Only one frequency should be selected in select_time. Selected: ",
+      shQuote(select_time))
+    
+    # Annual
+    if (select_time == "Y"){
+      dat <- subset(dat, nchar(time) == 4)
+      # Others
+    } else {
+      dat <- subset(dat, grepl(select_time, time))
+    }
+    # Test if data
+    if (nrow(dat) == 0) stop(
+      "No data selected with select_time:", dQuote(select_time), "\n",
+      "Available frequencies: ", shQuote(freqs))
+  } else {
+    
+    if (length(freqs) > 1 & time_format != "raw") stop(
+      "Data includes several time frequencies. Select frequency with
+         select_time or use time_format = \"raw\".
+         Available frequencies: ", shQuote(freqs ))
+  }
+  
+  # convert time column
+  dat$time <- convert_time_col(dat$time,
+                               time_format = time_format)
+  
+  
+  
+  dat
+  
+}
+
+available_freq <- function(x){
+  if (is.factor(x)) x <- levels(x)
+  x <- gsub("X", "", x)
+  freq <- c()
+  if (any(nchar(x) == 4)) freq <- c(freq, "Y")
+  freq_char <- unique(
+    substr(grep("[[:alpha:]]", x, value = TRUE), 5,5))
+  freq <- c(freq, freq_char)
+  freq
+}
+
+convert_time_col <- function(x, time_format){
+  
+  if (time_format == "raw"){
+    y <- x
+  } else {
+    x <- factor(x)
+    if (time_format == "date"){
+      y <- eurotime2date(x, last = FALSE)
+    } else if (time_format == "date_last"){
+      y <- eurotime2date(x, last = TRUE)
+    } else if (time_format == "num"){
+      y <- eurotime2num(x)
+    } else if (time_format == "raw") {
+      
+    } else {
+      stop("An unknown time_format argument: ", time_format,
+           " Allowed are date, date_last, num and raw")
+    }
+  }
+  y
+}
